@@ -17,15 +17,21 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_COMP</KEY>
-     <ENTRY>Comapre</ENTRY>
-     <LENGTH>17</LENGTH>
+     <KEY>P_COMP_T</KEY>
+     <ENTRY>Comapre Table</ENTRY>
+     <LENGTH>21</LENGTH>
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_COPY</KEY>
-     <ENTRY>Copy</ENTRY>
-     <LENGTH>17</LENGTH>
+     <KEY>P_COMP_Z</KEY>
+     <ENTRY>Comapre ZIP</ENTRY>
+     <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_COPY_T</KEY>
+     <ENTRY>Copy Table</ENTRY>
+     <LENGTH>18</LENGTH>
     </item>
     <item>
      <ID>S</ID>
@@ -53,7 +59,7 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_IMPO</KEY>
+     <KEY>P_IMPO_Z</KEY>
      <ENTRY>Import ZIP</ENTRY>
      <LENGTH>18</LENGTH>
     </item>

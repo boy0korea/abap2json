@@ -65,6 +65,7 @@ FUNCTION za2j_get.
       zcl_abap2json=>abap2json(
         EXPORTING
           it_data     = <lt_data>
+          iv_where    = iv_where
         IMPORTING
           ev_json_zip = ev_json_zip
       ).

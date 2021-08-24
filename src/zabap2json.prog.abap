@@ -9,11 +9,12 @@ REPORT zabap2json.
 **********************************************************************
 * SCREEN
 **********************************************************************
-PARAMETERS: p_impo   TYPE flag RADIOBUTTON GROUP rd DEFAULT 'X' USER-COMMAND rd,
+PARAMETERS: p_impo_z TYPE flag RADIOBUTTON GROUP rd DEFAULT 'X' USER-COMMAND rd,
+            p_comp_z TYPE flag RADIOBUTTON GROUP rd,
             p_expo_t TYPE flag RADIOBUTTON GROUP rd,
             p_expo_p TYPE flag RADIOBUTTON GROUP rd,
-            p_comp   TYPE flag RADIOBUTTON GROUP rd,
-            p_copy   TYPE flag RADIOBUTTON GROUP rd.
+            p_comp_t TYPE flag RADIOBUTTON GROUP rd,
+            p_copy_t TYPE flag RADIOBUTTON GROUP rd.
 
 SELECTION-SCREEN ULINE.
 PARAMETERS: p_folder TYPE string LOWER CASE MODIF ID 1,
@@ -30,11 +31,22 @@ PARAMETERS: p_folder TYPE string LOWER CASE MODIF ID 1,
 AT SELECTION-SCREEN OUTPUT.
 **********************************************************************
   CASE abap_true.
-    WHEN p_impo.
+    WHEN p_impo_z.
       LOOP AT SCREEN.
         CHECK: screen-group1 IS NOT INITIAL.
         CASE screen-group1.
           WHEN 1 OR 6 OR 8 OR 9.
+            screen-active = 1.
+          WHEN OTHERS.
+            screen-active = 0.
+        ENDCASE.
+        MODIFY SCREEN.
+      ENDLOOP.
+    WHEN p_comp_z.
+      LOOP AT SCREEN.
+        CHECK: screen-group1 IS NOT INITIAL.
+        CASE screen-group1.
+          WHEN 1 OR 6.
             screen-active = 1.
           WHEN OTHERS.
             screen-active = 0.
@@ -63,7 +75,7 @@ AT SELECTION-SCREEN OUTPUT.
         ENDCASE.
         MODIFY SCREEN.
       ENDLOOP.
-    WHEN p_comp.
+    WHEN p_comp_t.
       LOOP AT SCREEN.
         CHECK: screen-group1 IS NOT INITIAL.
         CASE screen-group1.
@@ -74,7 +86,7 @@ AT SELECTION-SCREEN OUTPUT.
         ENDCASE.
         MODIFY SCREEN.
       ENDLOOP.
-    WHEN p_copy.
+    WHEN p_copy_t.
       LOOP AT SCREEN.
         CHECK: screen-group1 IS NOT INITIAL.
         CASE screen-group1.
@@ -110,7 +122,7 @@ START-OF-SELECTION.
         lv_same       TYPE flag.
 
   CASE abap_true.
-    WHEN p_impo.
+    WHEN p_impo_z.
       zcl_abap2json=>get_server_info(
         EXPORTING
           iv_server  = p_server
@@ -123,6 +135,24 @@ START-OF-SELECTION.
           iv_folder            = p_folder
           iv_del               = p_del
           iv_simulate          = p_simul
+          iv_show_progress_bar = abap_true
+          iv_rfcdest           = lv_rfcdest
+          iv_client            = lv_client
+        IMPORTING
+          et_log               = lt_log
+          ev_error_text        = lv_error_text
+      ).
+    WHEN p_comp_z.
+      zcl_abap2json=>get_server_info(
+        EXPORTING
+          iv_server  = p_server
+        IMPORTING
+          ev_rfcdest = lv_rfcdest
+          ev_client  = lv_client
+      ).
+      zcl_abap2json=>compare_json_zip(
+        EXPORTING
+          iv_folder            = p_folder
           iv_show_progress_bar = abap_true
           iv_rfcdest           = lv_rfcdest
           iv_client            = lv_client
@@ -167,7 +197,7 @@ START-OF-SELECTION.
           et_log               = lt_log
           ev_error_text        = lv_error_text
       ).
-    WHEN p_comp.
+    WHEN p_comp_t.
       CHECK: p_table IS NOT INITIAL.
       zcl_abap2json=>get_server_info(
         EXPORTING
@@ -201,7 +231,7 @@ START-OF-SELECTION.
       ELSE.
         MESSAGE 'Different' TYPE 'S'.
       ENDIF.
-    WHEN p_copy.
+    WHEN p_copy_t.
       CHECK: p_table IS NOT INITIAL.
       zcl_abap2json=>get_server_info(
         EXPORTING
@@ -235,7 +265,8 @@ START-OF-SELECTION.
   ENDCASE.
 
   IF lv_error_text IS NOT INITIAL.
-    MESSAGE lv_error_text TYPE 'E'.
+    MESSAGE lv_error_text TYPE 'S' DISPLAY LIKE 'E'.
+    RETURN.
   ENDIF.
 
   IF lt_log IS NOT INITIAL.
