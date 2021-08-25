@@ -94,6 +94,7 @@
       </RSIMP>
       <RSIMP>
        <PARAMETER>IV_FROM</PARAMETER>
+       <DEFAULT>1</DEFAULT>
        <OPTIONAL>X</OPTIONAL>
        <TYP>I</TYP>
       </RSIMP>

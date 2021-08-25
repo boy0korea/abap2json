@@ -4,7 +4,7 @@ FUNCTION za2j_get.
 *"  IMPORTING
 *"     VALUE(IV_CLIENT) TYPE  MANDT
 *"     VALUE(IV_TNAME) TYPE  TABNAME
-*"     VALUE(IV_FROM) TYPE  I OPTIONAL
+*"     VALUE(IV_FROM) TYPE  I DEFAULT 1
 *"     VALUE(IV_UPTO) TYPE  I OPTIONAL
 *"     VALUE(IV_FLAG_COUNT_ONLY) TYPE  FLAG OPTIONAL
 *"     VALUE(IV_WHERE) TYPE  STRING OPTIONAL
@@ -15,10 +15,13 @@ FUNCTION za2j_get.
 *"      SQL_ERROR
 *"      UNKOWN_ERROR
 *"----------------------------------------------------------------------
-  DATA: lv_client TYPE mandt,
-        ltr_data  TYPE REF TO data,
-        lv_offset TYPE i.
-  FIELD-SYMBOLS: <lt_data> TYPE table.
+  DATA: lv_client     TYPE mandt,
+        ltr_data      TYPE REF TO data,
+        lv_has_client TYPE flag,
+        lv_offset     TYPE i.
+  FIELD-SYMBOLS: <lt_data> TYPE table,
+                 <ls_data> TYPE data,
+                 <lv_data> TYPE data.
 
   CLEAR: ev_json_zip, ev_count.
 
@@ -62,6 +65,14 @@ FUNCTION za2j_get.
 
       CHECK: <lt_data> IS NOT INITIAL.
       ev_count = lines( <lt_data> ).
+      " clear CLIENT(MANDT) field
+      lv_has_client = cl_abap_typedescr=>describe_by_name( iv_tname )->has_property( cl_abap_typedescr=>typepropkind_hasclient ).
+      IF lv_has_client EQ abap_true.
+        LOOP AT <lt_data> ASSIGNING <ls_data>.
+          ASSIGN COMPONENT 1 OF STRUCTURE <ls_data> TO <lv_data>.
+          CLEAR: <lv_data>.
+        ENDLOOP.
+      ENDIF.
       zcl_abap2json=>abap2json(
         EXPORTING
           it_data     = <lt_data>
