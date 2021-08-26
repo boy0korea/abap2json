@@ -40,6 +40,9 @@
      </EXPORT>
      <EXCEPTION>
       <RSEXC>
+       <EXCEPTION>TABLE_NAME_ERROR</EXCEPTION>
+      </RSEXC>
+      <RSEXC>
        <EXCEPTION>SQL_ERROR</EXCEPTION>
       </RSEXC>
       <RSEXC>
@@ -68,6 +71,10 @@
       <RSFDO>
        <PARAMETER>EV_COUNT</PARAMETER>
        <KIND>P</KIND>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>TABLE_NAME_ERROR</PARAMETER>
+       <KIND>X</KIND>
       </RSFDO>
       <RSFDO>
        <PARAMETER>SQL_ERROR</PARAMETER>
@@ -126,6 +133,9 @@
      </EXPORT>
      <EXCEPTION>
       <RSEXC>
+       <EXCEPTION>TABLE_NAME_ERROR</EXCEPTION>
+      </RSEXC>
+      <RSEXC>
        <EXCEPTION>SQL_ERROR</EXCEPTION>
       </RSEXC>
       <RSEXC>
@@ -168,6 +178,10 @@
        <KIND>P</KIND>
       </RSFDO>
       <RSFDO>
+       <PARAMETER>TABLE_NAME_ERROR</PARAMETER>
+       <KIND>X</KIND>
+      </RSFDO>
+      <RSFDO>
        <PARAMETER>SQL_ERROR</PARAMETER>
        <KIND>X</KIND>
       </RSFDO>
@@ -208,6 +222,9 @@
      </EXPORT>
      <EXCEPTION>
       <RSEXC>
+       <EXCEPTION>TABLE_NAME_ERROR</EXCEPTION>
+      </RSEXC>
+      <RSEXC>
        <EXCEPTION>SQL_ERROR</EXCEPTION>
       </RSEXC>
       <RSEXC>
@@ -236,6 +253,10 @@
       <RSFDO>
        <PARAMETER>EV_COUNT</PARAMETER>
        <KIND>P</KIND>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>TABLE_NAME_ERROR</PARAMETER>
+       <KIND>X</KIND>
       </RSFDO>
       <RSFDO>
        <PARAMETER>SQL_ERROR</PARAMETER>

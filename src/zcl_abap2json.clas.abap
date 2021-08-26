@@ -108,12 +108,14 @@ CLASS zcl_abap2json DEFINITION
       EXPORTING
         !ev_rfcdest TYPE rfcdest
         !ev_client  TYPE mandt .
-    CLASS-METHODS get_rfc_error_text
-      RETURNING
-        VALUE(rv_error_text) TYPE text255 .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
+    CLASS-METHODS get_rfc_error_text
+      IMPORTING
+        !iv_table            TYPE clike OPTIONAL
+      RETURNING
+        VALUE(rv_error_text) TYPE text255 .
     CLASS-METHODS get_table_content
       IMPORTING
         !iv_table      TYPE tabname
@@ -125,11 +127,38 @@ CLASS zcl_abap2json DEFINITION
       EXPORTING
         !et_data       TYPE table
         !ev_error_text TYPE char255 .
+    CLASS-METHODS get_http_response
+      IMPORTING
+        !iv_url            TYPE string
+      RETURNING
+        VALUE(ro_response) TYPE REF TO if_http_response
+      RAISING
+        cx_demo_exception .
+    CLASS-METHODS get_json_zip_file_list
+      IMPORTING
+        !iv_folder         TYPE string
+        !iv_sub_folder     TYPE flag DEFAULT abap_true
+      RETURNING
+        VALUE(rt_filename) TYPE stringtab
+      RAISING
+        cx_demo_exception .
+    CLASS-METHODS get_table_name
+      IMPORTING
+        !iv_filename    TYPE clike
+      RETURNING
+        VALUE(rv_table) TYPE tabname .
     CLASS-METHODS file_upload
       IMPORTING
-        !iv_file_name  TYPE string
+        !iv_filename   TYPE string
       EXPORTING
         !ev_xstring    TYPE xstring
+        !ev_error_text TYPE char255 .
+    CLASS-METHODS file_download
+      IMPORTING
+        !iv_folder     TYPE string
+        !iv_filename   TYPE string
+        !iv_xstring    TYPE xstring
+      EXPORTING
         !ev_error_text TYPE char255 .
 ENDCLASS.
 
@@ -213,14 +242,20 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
     CLEAR: ev_same, ev_error_text.
 
-    TRY.
+    IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
+      ev_error_text = TEXT-e03.
+      RETURN.
+    ENDIF.
+    IF iv_rfcdest2 IS NOT INITIAL AND iv_client2 IS INITIAL.
+      ev_error_text = TEXT-e03.
+      RETURN.
+    ENDIF.
+    IF iv_rfcdest EQ iv_rfcdest2 AND iv_client EQ iv_client2.
+      ev_error_text = TEXT-e06.
+      RETURN.
+    ENDIF.
 
-        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
-        IF iv_rfcdest2 IS NOT INITIAL AND iv_client2 IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
+    TRY.
 
         CALL FUNCTION 'ZA2J_GET'
           DESTINATION iv_rfcdest
@@ -234,12 +269,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           EXCEPTIONS
             system_failure        = 101 MESSAGE ev_error_text
             communication_failure = 102 MESSAGE ev_error_text
+            table_name_error      = 5
             sql_error             = 1
             unkown_error          = 2
             OTHERS                = 3.
         IF sy-subrc <> 0.
           IF ev_error_text IS INITIAL.
-            ev_error_text = get_rfc_error_text( ).
+            ev_error_text = get_rfc_error_text( iv_table ).
           ENDIF.
           RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
         ENDIF.
@@ -256,12 +292,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           EXCEPTIONS
             system_failure        = 101 MESSAGE ev_error_text
             communication_failure = 102 MESSAGE ev_error_text
+            table_name_error      = 5
             sql_error             = 1
             unkown_error          = 2
             OTHERS                = 3.
         IF sy-subrc <> 0.
           IF ev_error_text IS INITIAL.
-            ev_error_text = get_rfc_error_text( ).
+            ev_error_text = get_rfc_error_text( iv_table ).
           ENDIF.
           RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
         ENDIF.
@@ -350,14 +387,20 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           lo_cx       TYPE REF TO cx_demo_exception.
     CLEAR: et_log, ev_error_text.
 
-    TRY.
+    IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
+      ev_error_text = TEXT-e03.
+      RETURN.
+    ENDIF.
+    IF iv_rfcdest2 IS NOT INITIAL AND iv_client2 IS INITIAL.
+      ev_error_text = TEXT-e03.
+      RETURN.
+    ENDIF.
+    IF iv_rfcdest EQ iv_rfcdest2 AND iv_client EQ iv_client2.
+      ev_error_text = TEXT-e06.
+      RETURN.
+    ENDIF.
 
-        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
-        IF iv_rfcdest2 IS NOT INITIAL AND iv_client2 IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
+    TRY.
 
         IF iv_del EQ abap_true.
 *        DELETE FROM (lv_table).
@@ -371,12 +414,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             EXCEPTIONS
               system_failure        = 101 MESSAGE ev_error_text
               communication_failure = 102 MESSAGE ev_error_text
+              table_name_error      = 5
               sql_error             = 1
               unkown_error          = 2
               OTHERS                = 3.
           IF sy-subrc <> 0.
             IF ev_error_text IS INITIAL.
-              ev_error_text = get_rfc_error_text( ).
+              ev_error_text = get_rfc_error_text( iv_table ).
             ENDIF.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
@@ -395,12 +439,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           EXCEPTIONS
             system_failure        = 101 MESSAGE ev_error_text
             communication_failure = 102 MESSAGE ev_error_text
+            table_name_error      = 5
             sql_error             = 1
             unkown_error          = 2
             OTHERS                = 3.
         IF sy-subrc <> 0.
           IF ev_error_text IS INITIAL.
-            ev_error_text = get_rfc_error_text( ).
+            ev_error_text = get_rfc_error_text( iv_table ).
           ENDIF.
           RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
         ENDIF.
@@ -433,12 +478,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             EXCEPTIONS
               system_failure        = 101 MESSAGE ev_error_text
               communication_failure = 102 MESSAGE ev_error_text
+              table_name_error      = 5
               sql_error             = 1
               unkown_error          = 2
               OTHERS                = 3.
           IF sy-subrc <> 0.
             IF ev_error_text IS INITIAL.
-              ev_error_text = get_rfc_error_text( ).
+              ev_error_text = get_rfc_error_text( iv_table ).
             ENDIF.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
@@ -454,12 +500,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             EXCEPTIONS
               system_failure        = 101 MESSAGE ev_error_text
               communication_failure = 102 MESSAGE ev_error_text
+              table_name_error      = 5
               sql_error             = 1
               unkown_error          = 2
               OTHERS                = 3.
           IF sy-subrc <> 0.
             IF ev_error_text IS INITIAL.
-              ev_error_text = get_rfc_error_text( ).
+              ev_error_text = get_rfc_error_text( iv_table ).
             ENDIF.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
@@ -487,13 +534,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
 
   METHOD export_package.
-    DATA: lv_selected_folder TYPE string,
-          lt_table           TYPE TABLE OF tabname,
-          lv_table           TYPE tabname,
-          lt_log             TYPE tt_log,
-          lv_total           TYPE i,
-          lv_index           TYPE i,
-          lo_cx              TYPE REF TO cx_demo_exception.
+    DATA: lv_folder TYPE string,
+          lt_table  TYPE TABLE OF tabname,
+          lv_table  TYPE tabname,
+          lt_log    TYPE tt_log,
+          lv_total  TYPE i,
+          lv_index  TYPE i,
+          lo_cx     TYPE REF TO cx_demo_exception.
 
     CLEAR: et_log, ev_error_text.
 
@@ -512,12 +559,15 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         CHECK: lt_table IS NOT INITIAL.
 
 
-        IF iv_folder IS NOT INITIAL.
-          lv_selected_folder = iv_folder.
+        IF iv_folder CP 'http*'.
+          ev_error_text = 'export to github is not implemanted yet.'.
+          RETURN.
+        ELSEIF iv_folder IS NOT INITIAL.
+          lv_folder = iv_folder.
         ELSE.
           cl_gui_frontend_services=>directory_browse(
             CHANGING
-              selected_folder      = lv_selected_folder
+              selected_folder      = lv_folder
             EXCEPTIONS
               cntl_error           = 1               " Control error
               error_no_gui         = 2               " No GUI available
@@ -530,7 +580,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
         ENDIF.
-        CHECK: lv_selected_folder IS NOT INITIAL.
+        CHECK: lv_folder IS NOT INITIAL.
 
 
         lv_total = lines( lt_table ).
@@ -549,7 +599,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           export_table(
             EXPORTING
               iv_table             = lv_table
-              iv_folder            = lv_selected_folder
+              iv_folder            = lv_folder
               iv_show_progress_bar = abap_false
               iv_rfcdest           = iv_rfcdest
               iv_client            = iv_client
@@ -573,19 +623,16 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
 
   METHOD export_table.
-    DATA: lv_file_separator  TYPE c,
-          lv_selected_folder TYPE string,
-          lv_datetime        TYPE string,
-          lv_file_name       TYPE string,
-          lv_filelength      TYPE i,
-          lt_temptable       TYPE w3mimetabtype,
-          lv_xstring         TYPE xstring,
-          lv_total           TYPE i,
-          lv_from            TYPE i,
-          lv_part_num        TYPE i,
-          lv_count           TYPE i,
-          lv_index           TYPE i,
-          lo_cx              TYPE REF TO cx_demo_exception.
+    DATA: lv_folder   TYPE string,
+          lv_datetime TYPE string,
+          lv_filename TYPE string,
+          lv_xstring  TYPE xstring,
+          lv_total    TYPE i,
+          lv_from     TYPE i,
+          lv_part_num TYPE i,
+          lv_count    TYPE i,
+          lv_index    TYPE i,
+          lo_cx       TYPE REF TO cx_demo_exception.
 
     CLEAR: et_log, ev_error_text.
 
@@ -607,12 +654,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           EXCEPTIONS
             system_failure        = 101 MESSAGE ev_error_text
             communication_failure = 102 MESSAGE ev_error_text
+            table_name_error      = 5
             sql_error             = 1
             unkown_error          = 2
             OTHERS                = 3.
         IF sy-subrc <> 0.
           IF ev_error_text IS INITIAL.
-            ev_error_text = get_rfc_error_text( ).
+            ev_error_text = get_rfc_error_text( iv_table ).
           ENDIF.
           RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
         ENDIF.
@@ -623,12 +671,15 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         ENDIF.
 
 
-        IF iv_folder IS NOT INITIAL.
-          lv_selected_folder = iv_folder.
+        IF iv_folder CP 'http*'.
+          ev_error_text = 'export to github is not implemanted yet.'.
+          RETURN.
+        ELSEIF iv_folder IS NOT INITIAL.
+          lv_folder = iv_folder.
         ELSE.
           cl_gui_frontend_services=>directory_browse(
             CHANGING
-              selected_folder      = lv_selected_folder
+              selected_folder      = lv_folder
             EXCEPTIONS
               cntl_error           = 1               " Control error
               error_no_gui         = 2               " No GUI available
@@ -642,28 +693,12 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           ENDIF.
         ENDIF.
 
-        CHECK: lv_selected_folder IS NOT INITIAL.
-
-        cl_gui_frontend_services=>get_file_separator(
-          CHANGING
-            file_separator       = lv_file_separator
-          EXCEPTIONS
-            not_supported_by_gui = 1
-            error_no_gui         = 2
-            cntl_error           = 3
-            OTHERS               = 4
-        ).
-        IF sy-subrc <> 0.
-          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
-        ENDIF.
-
+        CHECK: lv_folder IS NOT INITIAL.
 
         lv_datetime = sy-datum && sy-uzeit.
         lv_from = 1.
         WHILE lv_from <= lv_total.
-          CLEAR: lv_xstring, lv_count, lt_temptable.
+          CLEAR: lv_xstring, lv_count.
 
           IF iv_show_progress_bar EQ abap_true.
             CALL FUNCTION 'PROGRESS_INDICATOR'
@@ -688,12 +723,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             EXCEPTIONS
               system_failure        = 101 MESSAGE ev_error_text
               communication_failure = 102 MESSAGE ev_error_text
+              table_name_error      = 5
               sql_error             = 1
               unkown_error          = 2
               OTHERS                = 3.
           IF sy-subrc <> 0.
             IF ev_error_text IS INITIAL.
-              ev_error_text = get_rfc_error_text( ).
+              ev_error_text = get_rfc_error_text( iv_table ).
             ENDIF.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
@@ -705,59 +741,24 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             lv_from = lv_from + gc_split_size.
             lv_part_num = lv_part_num + 1.
             IF lv_part_num EQ 1 AND lv_total <= gc_split_size.
-              lv_file_name = iv_table && '.' && lv_datetime && '.json.zip'.
+              lv_filename = iv_table && '.' && lv_datetime && '.json.zip'.
             ELSE.
-              lv_file_name = iv_table && '.' && lv_datetime && '.part' && lv_part_num && '.json.zip'.
+              lv_filename = iv_table && '.' && lv_datetime && '.part' && lv_part_num && '.json.zip'.
             ENDIF.
 
-            CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+            file_download(
               EXPORTING
-                buffer        = lv_xstring
+                iv_folder     = lv_folder
+                iv_filename   = lv_filename
+                iv_xstring    = lv_xstring
               IMPORTING
-                output_length = lv_filelength
-              TABLES
-                binary_tab    = lt_temptable.
-            cl_gui_frontend_services=>gui_download(
-              EXPORTING
-                bin_filesize              = lv_filelength         " File length for binary files
-                filename                  = lv_selected_folder && lv_file_separator && lv_file_name             " Name of file
-                filetype                  = 'BIN'                " File type (ASCII, binary ...)
-                show_transfer_status      = abap_false
-              CHANGING
-                data_tab                  = lt_temptable             " Transfer table
-              EXCEPTIONS
-                file_write_error          = 1                    " Cannot write to file
-                no_batch                  = 2                    " Cannot execute front-end function in background
-                gui_refuse_filetransfer   = 3                    " Incorrect Front End
-                invalid_type              = 4                    " Invalid value for parameter FILETYPE
-                no_authority              = 5                    " No Download Authorization
-                unknown_error             = 6                    " Unknown error
-                header_not_allowed        = 7                    " Invalid header
-                separator_not_allowed     = 8                    " Invalid separator
-                filesize_not_allowed      = 9                    " Invalid file size
-                header_too_long           = 10                   " Header information currently restricted to 1023 bytes
-                dp_error_create           = 11                   " Cannot create DataProvider
-                dp_error_send             = 12                   " Error Sending Data with DataProvider
-                dp_error_write            = 13                   " Error Writing Data with DataProvider
-                unknown_dp_error          = 14                   " Error when calling data provider
-                access_denied             = 15                   " Access to file denied.
-                dp_out_of_memory          = 16                   " Not enough memory in data provider
-                disk_full                 = 17                   " Storage medium is full.
-                dp_timeout                = 18                   " Data provider timeout
-                file_not_found            = 19                   " Could not find file
-                dataprovider_exception    = 20                   " General Exception Error in DataProvider
-                control_flush_error       = 21                   " Error in Control Framework
-                not_supported_by_gui      = 22                   " GUI does not support this
-                error_no_gui              = 23                   " GUI not available
-                OTHERS                    = 24
+                ev_error_text = ev_error_text
             ).
-            IF sy-subrc <> 0.
-              MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
+            IF ev_error_text IS NOT INITIAL.
               RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
             ENDIF.
 
-            APPEND VALUE #( table = iv_table file = lv_file_name count = lv_count ) TO et_log.
+            APPEND VALUE #( table = iv_table file = lv_filename count = lv_count ) TO et_log.
 
           ENDIF.
         ENDWHILE.
@@ -772,11 +773,17 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
   METHOD get_rfc_error_text.
     CASE sy-subrc.
+      WHEN 5.
+        rv_error_text = TEXT-e05.
       WHEN 1.
         rv_error_text = TEXT-e01.
       WHEN OTHERS.
         rv_error_text = TEXT-e02.
     ENDCASE.
+
+    IF iv_table IS NOT INITIAL.
+      rv_error_text = rv_error_text && `: ` && iv_table.
+    ENDIF.
   ENDMETHOD.
 
 
@@ -798,21 +805,16 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
 
   METHOD import_json_zip.
-    DATA: lv_file_separator  TYPE c,
-          lv_selected_folder TYPE string,
-          lt_file_info       TYPE TABLE OF file_info,
-          ls_file_info       TYPE file_info,
-          lv_file_name       TYPE string,
-          lv_xstring         TYPE xstring,
-          lv_json            TYPE string,
-          lt_string          TYPE TABLE OF string,
-          lv_string          TYPE string,
-          lt_table           TYPE TABLE OF tabname,
-          lv_table           TYPE tabname,
-          lv_count           TYPE i,
-          lv_total           TYPE i,
-          lv_index           TYPE i,
-          lo_cx              TYPE REF TO cx_demo_exception.
+    DATA: lv_folder   TYPE string,
+          lt_filename TYPE TABLE OF string,
+          lv_filename TYPE string,
+          lv_xstring  TYPE xstring,
+          lt_table    TYPE TABLE OF tabname,
+          lv_table    TYPE tabname,
+          lv_count    TYPE i,
+          lv_total    TYPE i,
+          lv_index    TYPE i,
+          lo_cx       TYPE REF TO cx_demo_exception.
 
     CLEAR: et_log, ev_error_text.
 
@@ -824,11 +826,11 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
 
         IF iv_folder IS NOT INITIAL.
-          lv_selected_folder = iv_folder.
+          lv_folder = iv_folder.
         ELSE.
           cl_gui_frontend_services=>directory_browse(
             CHANGING
-              selected_folder      = lv_selected_folder
+              selected_folder      = lv_folder
             EXCEPTIONS
               cntl_error           = 1               " Control error
               error_no_gui         = 2               " No GUI available
@@ -842,54 +844,18 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           ENDIF.
         ENDIF.
 
-        CHECK: lv_selected_folder IS NOT INITIAL.
+        CHECK: lv_folder IS NOT INITIAL.
+        lt_filename = get_json_zip_file_list( lv_folder ).
 
-        cl_gui_frontend_services=>get_file_separator(
-          CHANGING
-            file_separator       = lv_file_separator
-          EXCEPTIONS
-            not_supported_by_gui = 1
-            error_no_gui         = 2
-            cntl_error           = 3
-            OTHERS               = 4
-        ).
-        IF sy-subrc <> 0.
-          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
+        IF lt_filename IS INITIAL.
+          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e04.
         ENDIF.
-
-
-        cl_gui_frontend_services=>directory_list_files(
-          EXPORTING
-            directory                   = lv_selected_folder        " Directory To Search
-            filter                      = '*.json.zip'            " File filter
-            files_only                  = abap_true       " Return only Files, no Directories
-          CHANGING
-            file_table                  = lt_file_info       " Return Table for the Found Files
-            count                       = lv_count            " Number of Files/Dir Found
-          EXCEPTIONS
-            cntl_error                  = 1                " Control error
-            directory_list_files_failed = 2                " Could not list files in the directory
-            wrong_parameter             = 3                " Incorrect parameter combination
-            error_no_gui                = 4                " No GUI available
-            not_supported_by_gui        = 5                " GUI does not support this
-            OTHERS                      = 6
-        ).
-        IF sy-subrc <> 0.
-          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
-        ENDIF.
-
-        CHECK: lt_file_info IS NOT INITIAL.
+        SORT lt_filename.
 
 
         IF iv_del EQ abap_true.
-          LOOP AT lt_file_info INTO ls_file_info.
-            SPLIT ls_file_info-filename AT '.' INTO TABLE lt_string.
-            READ TABLE lt_string INTO lv_table INDEX 1.
-            APPEND lv_table TO lt_table.
+          LOOP AT lt_filename INTO lv_filename.
+            APPEND get_table_name( lv_filename ) TO lt_table.
           ENDLOOP.
           SORT lt_table.
           DELETE ADJACENT DUPLICATES FROM lt_table.
@@ -905,12 +871,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
               EXCEPTIONS
                 system_failure        = 101 MESSAGE ev_error_text
                 communication_failure = 102 MESSAGE ev_error_text
+                table_name_error      = 5
                 sql_error             = 1
                 unkown_error          = 2
                 OTHERS                = 3.
             IF sy-subrc <> 0.
               IF ev_error_text IS INITIAL.
-                ev_error_text = get_rfc_error_text( ).
+                ev_error_text = get_rfc_error_text( lv_table ).
               ENDIF.
               RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
             ENDIF.
@@ -918,8 +885,8 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           ENDLOOP.
         ENDIF.
 
-        lv_total = lines( lt_file_info ).
-        LOOP AT lt_file_info INTO ls_file_info.
+        lv_total = lines( lt_filename ).
+        LOOP AT lt_filename INTO lv_filename.
           CLEAR: lv_table.
 
           lv_index = sy-tabix.
@@ -933,10 +900,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
                 i_total              = lv_total.
           ENDIF.
 
-          lv_file_name = lv_selected_folder && lv_file_separator && ls_file_info-filename.
           file_upload(
             EXPORTING
-              iv_file_name  = lv_file_name
+              iv_filename  = lv_filename
             IMPORTING
               ev_xstring    = lv_xstring
               ev_error_text = ev_error_text
@@ -945,8 +911,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
 
-          SPLIT ls_file_info-filename AT '.' INTO TABLE lt_string.
-          READ TABLE lt_string INTO lv_table INDEX 1.
+          lv_table = get_table_name( lv_filename ).
 
 *      CREATE DATA lr_data TYPE TABLE OF (lv_table).
 *      ASSIGN lr_data->* TO <lt_data>.
@@ -970,17 +935,18 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             EXCEPTIONS
               system_failure        = 101 MESSAGE ev_error_text
               communication_failure = 102 MESSAGE ev_error_text
+              table_name_error      = 5
               sql_error             = 1
               unkown_error          = 2
               OTHERS                = 3.
           IF sy-subrc <> 0.
             IF ev_error_text IS INITIAL.
-              ev_error_text = get_rfc_error_text( ).
+              ev_error_text = get_rfc_error_text( lv_table ).
             ENDIF.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
 
-          APPEND VALUE #( table = lv_table file = ls_file_info-filename count = lv_count ) TO et_log.
+          APPEND VALUE #( table = lv_table file = lv_filename count = lv_count ) TO et_log.
         ENDLOOP.
 
 
@@ -1064,7 +1030,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         OTHERS          = 2
     ).
 *    CHECK: sy-subrc EQ 0.
-    IF sy-subrc <> 0.
+    IF sy-subrc <> 0 OR lo_zip->files IS INITIAL.
       cl_abap_conv_in_ce=>create( encoding = gc_encoding input = iv_json_zip )->read(
         IMPORTING
           data = lv_json
@@ -1076,6 +1042,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         CHANGING
           data             = et_data
       ).
+      RETURN.
     ENDIF.
 
     IF ev_where IS REQUESTED.
@@ -1130,21 +1097,18 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
 
   METHOD compare_json_zip.
-    DATA: lv_file_separator  TYPE c,
-          lv_selected_folder TYPE string,
-          lt_file_info       TYPE TABLE OF file_info,
-          ls_file_info       TYPE file_info,
+    DATA: lv_folder       TYPE string,
+          lt_filename     TYPE TABLE OF string,
+          lv_filename     TYPE string,
+          lv_filename_old TYPE string,
           BEGIN OF ls_file_and_table,
             filename TYPE string,
             table    TYPE string,
             parted   TYPE flag,
           END OF ls_file_and_table,
           lt_file_and_table LIKE TABLE OF ls_file_and_table,
-          lv_file_name      TYPE string,
           lv_xstring        TYPE xstring,
           lv_json           TYPE string,
-          lt_string         TYPE TABLE OF string,
-          lv_string         TYPE string,
           lv_table          TYPE tabname,
           ltr_data          TYPE REF TO data,
           lv_where          TYPE string,
@@ -1156,9 +1120,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           lv_index          TYPE i,
           lo_cx             TYPE REF TO cx_demo_exception.
     FIELD-SYMBOLS: <lt_data>  TYPE table,
-                   <lt_data2> TYPE table,
-                   <ls_data>  TYPE data,
-                   <lv_data>  TYPE data.
+                   <lt_data2> TYPE table.
 
     CLEAR: et_log, ev_error_text.
 
@@ -1170,11 +1132,11 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
 
         IF iv_folder IS NOT INITIAL.
-          lv_selected_folder = iv_folder.
+          lv_folder = iv_folder.
         ELSE.
           cl_gui_frontend_services=>directory_browse(
             CHANGING
-              selected_folder      = lv_selected_folder
+              selected_folder      = lv_folder
             EXCEPTIONS
               cntl_error           = 1               " Control error
               error_no_gui         = 2               " No GUI available
@@ -1188,62 +1150,27 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           ENDIF.
         ENDIF.
 
-        CHECK: lv_selected_folder IS NOT INITIAL.
+        CHECK: lv_folder IS NOT INITIAL.
 
-        cl_gui_frontend_services=>get_file_separator(
-          CHANGING
-            file_separator       = lv_file_separator
-          EXCEPTIONS
-            not_supported_by_gui = 1
-            error_no_gui         = 2
-            cntl_error           = 3
-            OTHERS               = 4
-        ).
-        IF sy-subrc <> 0.
-          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
+        lt_filename = get_json_zip_file_list( lv_folder ).
+
+        IF lt_filename IS INITIAL.
+          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e04.
         ENDIF.
+        SORT lt_filename.
 
-
-        cl_gui_frontend_services=>directory_list_files(
-          EXPORTING
-            directory                   = lv_selected_folder        " Directory To Search
-            filter                      = '*.json.zip'            " File filter
-            files_only                  = abap_true       " Return only Files, no Directories
-          CHANGING
-            file_table                  = lt_file_info       " Return Table for the Found Files
-            count                       = lv_count            " Number of Files/Dir Found
-          EXCEPTIONS
-            cntl_error                  = 1                " Control error
-            directory_list_files_failed = 2                " Could not list files in the directory
-            wrong_parameter             = 3                " Incorrect parameter combination
-            error_no_gui                = 4                " No GUI available
-            not_supported_by_gui        = 5                " GUI does not support this
-            OTHERS                      = 6
-        ).
-        IF sy-subrc <> 0.
-          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
-        ENDIF.
-
-        CHECK: lt_file_info IS NOT INITIAL.
-        SORT lt_file_info BY filename.
-
-        LOOP AT lt_file_info INTO ls_file_info.
+        LOOP AT lt_filename INTO lv_filename.
           CLEAR: ls_file_and_table.
-          ls_file_and_table-filename = ls_file_info-filename.
+          ls_file_and_table-filename = lv_filename.
           REPLACE REGEX '.part\d*.json.zip' IN ls_file_and_table-filename WITH '.part1.json.zip'.
           IF sy-subrc EQ 0.
-            IF ls_file_and_table-filename EQ lv_file_name.
+            IF ls_file_and_table-filename EQ lv_filename_old.
               CONTINUE.
             ENDIF.
-            lv_file_name = ls_file_and_table-filename.
+            lv_filename_old = ls_file_and_table-filename.
             ls_file_and_table-parted = abap_true.
           ENDIF.
-          FIND '.' IN ls_file_and_table-filename MATCH OFFSET lv_count.
-          ls_file_and_table-table = ls_file_and_table-filename(lv_count).
+          ls_file_and_table-table = get_table_name( lv_filename ).
           APPEND ls_file_and_table TO lt_file_and_table.
         ENDLOOP.
 
@@ -1255,6 +1182,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
           lv_index = sy-tabix.
           lv_table = ls_file_and_table-table.
+          lv_filename = ls_file_and_table-filename.
 
           IF iv_show_progress_bar EQ abap_true.
             CALL FUNCTION 'PROGRESS_INDICATOR'
@@ -1271,10 +1199,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           ASSIGN ltr_data->* TO <lt_data2>.
 
 
-          lv_file_name = lv_selected_folder && lv_file_separator && ls_file_and_table-filename.
           file_upload(
             EXPORTING
-              iv_file_name  = lv_file_name
+              iv_filename  = lv_filename
             IMPORTING
               ev_xstring    = lv_xstring
               ev_error_text = ev_error_text
@@ -1320,12 +1247,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             EXCEPTIONS
               system_failure        = 101 MESSAGE ev_error_text
               communication_failure = 102 MESSAGE ev_error_text
+              table_name_error      = 5
               sql_error             = 1
               unkown_error          = 2
               OTHERS                = 3.
           IF sy-subrc <> 0.
             IF ev_error_text IS INITIAL.
-              ev_error_text = get_rfc_error_text( ).
+              ev_error_text = get_rfc_error_text( lv_table ).
             ENDIF.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
@@ -1361,8 +1289,8 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
                   RETURN.
                 ENDIF.
 
-                REPLACE REGEX '.part\d*.json.zip' IN ls_file_and_table-filename WITH '.part' && lv_part_num && '.json.zip'.
-                READ TABLE lt_file_info TRANSPORTING NO FIELDS WITH KEY filename = ls_file_and_table-filename BINARY SEARCH.
+                REPLACE REGEX '.part\d*.json.zip' IN lv_filename WITH '.part' && lv_part_num && '.json.zip'.
+                READ TABLE lt_filename TRANSPORTING NO FIELDS WITH KEY table_line = lv_filename BINARY SEARCH.
                 IF sy-subrc <> 0.
                   " file is not exist
                   IF <lt_data> IS NOT INITIAL.
@@ -1371,10 +1299,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
                   EXIT.
                 ENDIF.
 
-                lv_file_name = lv_selected_folder && lv_file_separator && ls_file_and_table-filename.
                 file_upload(
                   EXPORTING
-                    iv_file_name  = lv_file_name
+                    iv_filename  = lv_filename
                   IMPORTING
                     ev_xstring    = lv_xstring
                     ev_error_text = ev_error_text
@@ -1404,12 +1331,12 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
           " log
           IF ls_file_and_table-parted EQ abap_true.
-            REPLACE REGEX '.part\d*.json.zip' IN ls_file_and_table-filename WITH '.part*.json.zip'.
+            REPLACE REGEX '.part\d*.json.zip' IN lv_filename WITH '.part*.json.zip'.
           ENDIF.
           IF lv_diffrent EQ abap_true.
-            APPEND VALUE #( table = lv_table file = ls_file_and_table-filename text = 'Different' count = lv_count ) TO et_log.
+            APPEND VALUE #( table = lv_table file = lv_filename text = 'Different' count = lv_count ) TO et_log.
           ELSE.
-            APPEND VALUE #( table = lv_table file = ls_file_and_table-filename text = 'Same' count = lv_count ) TO et_log.
+            APPEND VALUE #( table = lv_table file = lv_filename text = 'Same' count = lv_count ) TO et_log.
           ENDIF.
         ENDLOOP.
 
@@ -1423,61 +1350,69 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
   METHOD file_upload.
     DATA: lv_filelength TYPE i,
-          lt_temptable  TYPE w3mimetabtype.
+          lt_temptable  TYPE w3mimetabtype,
+          lo_cx         TYPE REF TO cx_demo_exception.
 
     CLEAR: ev_xstring, ev_error_text.
 
-    cl_gui_frontend_services=>gui_upload(
-      EXPORTING
-        filename                = iv_file_name              " Name of file
-        filetype                = 'BIN'              " File Type (ASCII, Binary)
-      IMPORTING
-        filelength              = lv_filelength         " File Length
-      CHANGING
-        data_tab                = lt_temptable           " Transfer table for file contents
-      EXCEPTIONS
-        file_open_error         = 1                  " File does not exist and cannot be opened
-        file_read_error         = 2                  " Error when reading file
-        no_batch                = 3                  " Cannot execute front-end function in background
-        gui_refuse_filetransfer = 4                  " Incorrect front end or error on front end
-        invalid_type            = 5                  " Incorrect parameter FILETYPE
-        no_authority            = 6                  " No upload authorization
-        unknown_error           = 7                  " Unknown error
-        bad_data_format         = 8                  " Cannot Interpret Data in File
-        header_not_allowed      = 9                  " Invalid header
-        separator_not_allowed   = 10                 " Invalid separator
-        header_too_long         = 11                 " Header information currently restricted to 1023 bytes
-        unknown_dp_error        = 12                 " Error when calling data provider
-        access_denied           = 13                 " Access to file denied.
-        dp_out_of_memory        = 14                 " Not enough memory in data provider
-        disk_full               = 15                 " Storage medium is full.
-        dp_timeout              = 16                 " Data provider timeout
-        not_supported_by_gui    = 17                 " GUI does not support this
-        error_no_gui            = 18                 " GUI not available
-        OTHERS                  = 19
-    ).
-    IF sy-subrc <> 0.
-      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-        WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
-      RETURN.
-    ENDIF.
+    IF iv_filename CP 'http*'.
+      TRY.
+          ev_xstring = get_http_response( iv_filename )->get_data( ).
+        CATCH cx_demo_exception INTO lo_cx.
+          ev_error_text = lo_cx->exception_text.
+      ENDTRY.
+    ELSE.
+      cl_gui_frontend_services=>gui_upload(
+        EXPORTING
+          filename                = iv_filename              " Name of file
+          filetype                = 'BIN'              " File Type (ASCII, Binary)
+        IMPORTING
+          filelength              = lv_filelength         " File Length
+        CHANGING
+          data_tab                = lt_temptable           " Transfer table for file contents
+        EXCEPTIONS
+          file_open_error         = 1                  " File does not exist and cannot be opened
+          file_read_error         = 2                  " Error when reading file
+          no_batch                = 3                  " Cannot execute front-end function in background
+          gui_refuse_filetransfer = 4                  " Incorrect front end or error on front end
+          invalid_type            = 5                  " Incorrect parameter FILETYPE
+          no_authority            = 6                  " No upload authorization
+          unknown_error           = 7                  " Unknown error
+          bad_data_format         = 8                  " Cannot Interpret Data in File
+          header_not_allowed      = 9                  " Invalid header
+          separator_not_allowed   = 10                 " Invalid separator
+          header_too_long         = 11                 " Header information currently restricted to 1023 bytes
+          unknown_dp_error        = 12                 " Error when calling data provider
+          access_denied           = 13                 " Access to file denied.
+          dp_out_of_memory        = 14                 " Not enough memory in data provider
+          disk_full               = 15                 " Storage medium is full.
+          dp_timeout              = 16                 " Data provider timeout
+          not_supported_by_gui    = 17                 " GUI does not support this
+          error_no_gui            = 18                 " GUI not available
+          OTHERS                  = 19
+      ).
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
+        RETURN.
+      ENDIF.
 
-    CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
-      EXPORTING
-        input_length = lv_filelength
-      IMPORTING
-        buffer       = ev_xstring
-      TABLES
-        binary_tab   = lt_temptable
-      EXCEPTIONS
-        failed       = 1
-        OTHERS       = 2.
-    IF sy-subrc <> 0.
-      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-        WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
-      RETURN.
+      CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
+        EXPORTING
+          input_length = lv_filelength
+        IMPORTING
+          buffer       = ev_xstring
+        TABLES
+          binary_tab   = lt_temptable
+        EXCEPTIONS
+          failed       = 1
+          OTHERS       = 2.
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
+        RETURN.
+      ENDIF.
     ENDIF.
-
 
   ENDMETHOD.
 
@@ -1514,12 +1449,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         EXCEPTIONS
           system_failure        = 101 MESSAGE ev_error_text
           communication_failure = 102 MESSAGE ev_error_text
+          table_name_error      = 5
           sql_error             = 1
           unkown_error          = 2
           OTHERS                = 3.
       IF sy-subrc <> 0.
         IF ev_error_text IS INITIAL.
-          ev_error_text = get_rfc_error_text( ).
+          ev_error_text = get_rfc_error_text( iv_table ).
         ENDIF.
         RETURN.
       ENDIF.
@@ -1559,7 +1495,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             ENDLOOP.
           ENDIF.
 
-        CATCH cx_sy_dynamic_osql_error.
+        CATCH cx_sy_sql_error.
           ev_error_text = TEXT-e01.
         CATCH cx_root.
           ev_error_text = TEXT-e02.
@@ -1568,5 +1504,303 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
     ENDIF.
 
 
+  ENDMETHOD.
+
+
+  METHOD file_download.
+    DATA: lv_filelength     TYPE i,
+          lt_temptable      TYPE w3mimetabtype,
+          lv_file_separator TYPE c,
+          lo_cx             TYPE REF TO cx_demo_exception.
+
+    CLEAR: ev_error_text.
+
+    IF iv_filename CP 'http*'.
+      TRY.
+
+          ev_error_text = 'export to github is not implemanted yet.'.
+          RETURN.
+
+        CATCH cx_demo_exception INTO lo_cx.
+          ev_error_text = lo_cx->exception_text.
+      ENDTRY.
+
+    ELSE.
+
+      cl_gui_frontend_services=>get_file_separator(
+        CHANGING
+          file_separator       = lv_file_separator
+        EXCEPTIONS
+          not_supported_by_gui = 1
+          error_no_gui         = 2
+          cntl_error           = 3
+          OTHERS               = 4
+      ).
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
+        RETURN.
+      ENDIF.
+      CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+        EXPORTING
+          buffer        = iv_xstring
+        IMPORTING
+          output_length = lv_filelength
+        TABLES
+          binary_tab    = lt_temptable.
+      cl_gui_frontend_services=>gui_download(
+        EXPORTING
+          bin_filesize              = lv_filelength         " File length for binary files
+          filename                  = iv_folder && lv_file_separator && iv_filename             " Name of file
+          filetype                  = 'BIN'                " File type (ASCII, binary ...)
+          show_transfer_status      = abap_false
+        CHANGING
+          data_tab                  = lt_temptable             " Transfer table
+        EXCEPTIONS
+          file_write_error          = 1                    " Cannot write to file
+          no_batch                  = 2                    " Cannot execute front-end function in background
+          gui_refuse_filetransfer   = 3                    " Incorrect Front End
+          invalid_type              = 4                    " Invalid value for parameter FILETYPE
+          no_authority              = 5                    " No Download Authorization
+          unknown_error             = 6                    " Unknown error
+          header_not_allowed        = 7                    " Invalid header
+          separator_not_allowed     = 8                    " Invalid separator
+          filesize_not_allowed      = 9                    " Invalid file size
+          header_too_long           = 10                   " Header information currently restricted to 1023 bytes
+          dp_error_create           = 11                   " Cannot create DataProvider
+          dp_error_send             = 12                   " Error Sending Data with DataProvider
+          dp_error_write            = 13                   " Error Writing Data with DataProvider
+          unknown_dp_error          = 14                   " Error when calling data provider
+          access_denied             = 15                   " Access to file denied.
+          dp_out_of_memory          = 16                   " Not enough memory in data provider
+          disk_full                 = 17                   " Storage medium is full.
+          dp_timeout                = 18                   " Data provider timeout
+          file_not_found            = 19                   " Could not find file
+          dataprovider_exception    = 20                   " General Exception Error in DataProvider
+          control_flush_error       = 21                   " Error in Control Framework
+          not_supported_by_gui      = 22                   " GUI does not support this
+          error_no_gui              = 23                   " GUI not available
+          OTHERS                    = 24
+      ).
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO ev_error_text.
+        RETURN.
+      ENDIF.
+    ENDIF.
+
+
+  ENDMETHOD.
+
+
+  METHOD get_http_response.
+    DATA: lo_http    TYPE REF TO if_http_client,
+          lv_message TYPE string.
+
+    cl_http_client=>create_by_url(
+      EXPORTING
+        url                    = iv_url
+      IMPORTING
+        client                 = lo_http
+      EXCEPTIONS
+        OTHERS                 = 1
+    ).
+    CHECK: sy-subrc EQ 0.
+
+    lo_http->send(
+      EXCEPTIONS
+        OTHERS                 = 1
+    ).
+    IF sy-subrc <> 0.
+      lo_http->get_last_error(
+        IMPORTING
+          message        = lv_message
+      ).
+      RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = CONV #( lv_message ).
+    ENDIF.
+    CHECK: sy-subrc EQ 0.
+
+    lo_http->receive(
+      EXCEPTIONS
+        OTHERS                 = 1
+    ).
+    IF sy-subrc <> 0.
+      lo_http->get_last_error(
+        IMPORTING
+          message        = lv_message
+      ).
+      RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = CONV #( lv_message ).
+    ENDIF.
+    CHECK: sy-subrc EQ 0.
+
+    ro_response = lo_http->response.
+    IF ro_response IS INITIAL.
+      RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = CONV #( iv_url ).
+    ENDIF.
+
+*    rv_response = lo_http->response->get_cdata( ).
+
+  ENDMETHOD.
+
+
+  METHOD get_json_zip_file_list.
+    CONSTANTS: lc_github_url  TYPE string VALUE 'https://github.com/',
+               lc_rawfile_url TYPE string VALUE 'https://raw.githubusercontent.com/'.
+    DATA: lv_base_url       TYPE string,
+          lv_html           TYPE string,
+          lv_regex          TYPE string,
+          lt_match_result   TYPE match_result_tab,
+          ls_match_result   TYPE match_result,
+          lv_filename       TYPE string,
+          lv_file_separator TYPE c,
+          lt_file_info      TYPE TABLE OF file_info,
+          ls_file_info      TYPE file_info,
+          lv_count          TYPE i,
+          lv_error_text     TYPE text255.
+
+
+
+    IF iv_folder CP 'http*'.
+
+      lv_base_url = iv_folder.
+      IF lv_base_url CP 'https://github.com/*'.
+        " github.com
+        IF lv_base_url NS '/tree/'.
+          lv_base_url = lv_base_url && '/tree/main/'.
+        ENDIF.
+
+        lv_html = get_http_response( lv_base_url )->get_cdata( ).
+        CHECK: lv_html IS NOT INITIAL.
+        REPLACE lc_github_url IN lv_base_url WITH ''.
+
+        " file
+        lv_regex = lv_base_url && '[^"]*\.json\.zip'.
+        REPLACE '/tree/' IN lv_regex WITH '/blob/'.
+        FIND ALL OCCURRENCES OF REGEX lv_regex IN lv_html RESULTS lt_match_result.
+        LOOP AT lt_match_result INTO ls_match_result.
+          lv_filename = lc_rawfile_url && lv_html+ls_match_result-offset(ls_match_result-length).
+          REPLACE '/blob/' IN lv_filename WITH '/'.
+          APPEND lv_filename TO rt_filename.
+        ENDLOOP.
+
+        " folder
+        IF iv_sub_folder EQ abap_true.
+          lv_regex = lv_base_url && '[^"]*'.
+          FIND ALL OCCURRENCES OF REGEX lv_regex IN lv_html RESULTS lt_match_result.
+          LOOP AT lt_match_result INTO ls_match_result.
+            lv_filename = lc_github_url && lv_html+ls_match_result-offset(ls_match_result-length).
+            APPEND LINES OF get_json_zip_file_list( lv_filename ) TO rt_filename.
+          ENDLOOP.
+        ENDIF.
+
+      ELSE.
+        " others
+        APPEND lv_base_url TO rt_filename.
+      ENDIF.
+
+    ELSE.
+
+      CHECK: iv_folder IS NOT INITIAL.
+
+      cl_gui_frontend_services=>get_file_separator(
+        CHANGING
+          file_separator       = lv_file_separator
+        EXCEPTIONS
+          not_supported_by_gui = 1
+          error_no_gui         = 2
+          cntl_error           = 3
+          OTHERS               = 4
+      ).
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO lv_error_text.
+        RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = lv_error_text.
+      ENDIF.
+
+      " file
+      CLEAR: lt_file_info, lv_count.
+      cl_gui_frontend_services=>directory_list_files(
+        EXPORTING
+          directory                   = iv_folder        " Directory To Search
+          filter                      = '*.json.zip'            " File filter
+          files_only                  = abap_true       " Return only Files, no Directories
+        CHANGING
+          file_table                  = lt_file_info       " Return Table for the Found Files
+          count                       = lv_count            " Number of Files/Dir Found
+        EXCEPTIONS
+          cntl_error                  = 1                " Control error
+          directory_list_files_failed = 2                " Could not list files in the directory
+          wrong_parameter             = 3                " Incorrect parameter combination
+          error_no_gui                = 4                " No GUI available
+          not_supported_by_gui        = 5                " GUI does not support this
+          OTHERS                      = 6
+      ).
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO lv_error_text.
+        RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = lv_error_text.
+      ENDIF.
+
+      LOOP AT lt_file_info INTO ls_file_info.
+        lv_filename = iv_folder && lv_file_separator && ls_file_info-filename.
+        APPEND lv_filename TO rt_filename.
+      ENDLOOP.
+
+      " folder
+      IF iv_sub_folder EQ abap_true.
+        CLEAR: lt_file_info, lv_count.
+        cl_gui_frontend_services=>directory_list_files(
+          EXPORTING
+            directory                   = iv_folder        " Directory To Search
+            directories_only            = abap_true " Return only Directories, no Files
+          CHANGING
+            file_table                  = lt_file_info       " Return Table for the Found Files
+            count                       = lv_count            " Number of Files/Dir Found
+          EXCEPTIONS
+            cntl_error                  = 1                " Control error
+            directory_list_files_failed = 2                " Could not list files in the directory
+            wrong_parameter             = 3                " Incorrect parameter combination
+            error_no_gui                = 4                " No GUI available
+            not_supported_by_gui        = 5                " GUI does not support this
+            OTHERS                      = 6
+        ).
+        IF sy-subrc <> 0.
+          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 INTO lv_error_text.
+          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = lv_error_text.
+        ENDIF.
+
+        LOOP AT lt_file_info INTO ls_file_info.
+          lv_filename = iv_folder && lv_file_separator && ls_file_info-filename.
+          APPEND LINES OF get_json_zip_file_list( lv_filename ) TO rt_filename.
+        ENDLOOP.
+      ENDIF.
+
+      IF rt_filename IS INITIAL.
+        " if iv_folder is file (not folder), return it.
+        IF cl_gui_frontend_services=>file_exist( iv_folder ) EQ abap_true.
+          APPEND iv_folder TO rt_filename.
+        ENDIF.
+      ENDIF.
+
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_table_name.
+    DATA: lv_name   TYPE string,
+          lv_offset TYPE i.
+
+    " reemove before /
+    FIND ALL OCCURRENCES OF REGEX '[\\/]' IN iv_filename MATCH OFFSET lv_offset.
+    IF sy-subrc EQ 0.
+      lv_offset = lv_offset + 1.
+    ENDIF.
+    lv_name = iv_filename+lv_offset.
+
+    " remove after .
+    FIND '.' IN lv_name MATCH OFFSET lv_offset.
+    rv_table = lv_name(lv_offset).
   ENDMETHOD.
 ENDCLASS.

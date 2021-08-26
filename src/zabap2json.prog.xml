@@ -54,8 +54,8 @@
     <item>
      <ID>S</ID>
      <KEY>P_FOLDER</KEY>
-     <ENTRY>folder</ENTRY>
-     <LENGTH>14</LENGTH>
+     <ENTRY>folder or github</ENTRY>
+     <LENGTH>24</LENGTH>
     </item>
     <item>
      <ID>S</ID>

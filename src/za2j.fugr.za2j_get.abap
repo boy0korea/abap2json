@@ -12,6 +12,7 @@ FUNCTION za2j_get.
 *"     VALUE(EV_JSON_ZIP) TYPE  XSTRING
 *"     VALUE(EV_COUNT) TYPE  I
 *"  EXCEPTIONS
+*"      TABLE_NAME_ERROR
 *"      SQL_ERROR
 *"      UNKOWN_ERROR
 *"----------------------------------------------------------------------
@@ -34,6 +35,9 @@ FUNCTION za2j_get.
 
 
   TRY .
+      CREATE DATA ltr_data TYPE TABLE OF (iv_tname).
+      ASSIGN ltr_data->* TO <lt_data>.
+
       IF iv_flag_count_only IS NOT INITIAL.
         SELECT COUNT(*)
           FROM (iv_tname)
@@ -42,9 +46,6 @@ FUNCTION za2j_get.
           WHERE (iv_where).
         RETURN.
       ENDIF.
-
-      CREATE DATA ltr_data TYPE TABLE OF (iv_tname).
-      ASSIGN ltr_data->* TO <lt_data>.
 
       IF iv_upto IS NOT INITIAL.
         lv_offset = iv_from - 1.
@@ -73,6 +74,7 @@ FUNCTION za2j_get.
           CLEAR: <lv_data>.
         ENDLOOP.
       ENDIF.
+
       zcl_abap2json=>abap2json(
         EXPORTING
           it_data     = <lt_data>
@@ -81,7 +83,9 @@ FUNCTION za2j_get.
           ev_json_zip = ev_json_zip
       ).
 
-    CATCH cx_sy_dynamic_osql_error.
+    CATCH cx_sy_create_error.
+      RAISE table_name_error.
+    CATCH cx_sy_sql_error.
       RAISE sql_error.
     CATCH cx_root.
       RAISE unkown_error.

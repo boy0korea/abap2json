@@ -30,6 +30,24 @@
      <ENTRY>Client data is missing</ENTRY>
      <LENGTH>100</LENGTH>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>E04</KEY>
+     <ENTRY>*.josn.zip does not exist</ENTRY>
+     <LENGTH>100</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>E05</KEY>
+     <ENTRY>Table name ERROR</ENTRY>
+     <LENGTH>100</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>E06</KEY>
+     <ENTRY>same server</ENTRY>
+     <LENGTH>100</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
