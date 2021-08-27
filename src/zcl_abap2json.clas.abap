@@ -1622,6 +1622,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
     cl_http_client=>create_by_url(
       EXPORTING
         url                    = iv_url
+        do_not_use_client_cert = abap_true
       IMPORTING
         client                 = lo_http
       EXCEPTIONS
