@@ -1,113 +1,114 @@
-CLASS zcl_abap2json DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_ABAP2JSON definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      BEGIN OF ts_log,
+  types:
+    BEGIN OF ts_log,
         table TYPE tabname,
         file  TYPE string,
         text  TYPE string,
         count TYPE i,
       END OF ts_log .
-    TYPES:
-      tt_log TYPE TABLE OF ts_log .
+  types:
+    tt_log TYPE TABLE OF ts_log .
 
-    CONSTANTS gc_split_size TYPE i VALUE 10000 ##NO_TEXT.
-    CONSTANTS gc_encoding TYPE abap_encod VALUE 'UTF-8' ##NO_TEXT.
-    CLASS-DATA gt_tms TYPE stms_wbo_clients READ-ONLY .
-    CLASS-DATA gt_server_info TYPE vrm_values READ-ONLY .
+  constants GC_SPLIT_SIZE type I value 10000 ##NO_TEXT.
+  constants GC_ENCODING type ABAP_ENCOD value 'UTF-8' ##NO_TEXT.
+  class-data GT_TMS type STMS_WBO_CLIENTS read-only .
+  class-data GT_SERVER_INFO type VRM_VALUES read-only .
 
-    CLASS-METHODS abap2json
-      IMPORTING
-        !it_data     TYPE data
-        !iv_where    TYPE string OPTIONAL
-      EXPORTING
-        !ev_json     TYPE string
-        !ev_json_zip TYPE xstring .
-    CLASS-METHODS json2abap
-      IMPORTING
-        !iv_json_zip TYPE xstring
-      EXPORTING
-        !et_data     TYPE data
-        !ev_where    TYPE string .
-    CLASS-METHODS import_json_zip
-      IMPORTING
-        !iv_folder            TYPE clike OPTIONAL
-        !iv_del               TYPE flag OPTIONAL
-        !iv_simulate          TYPE flag OPTIONAL
-        !iv_show_progress_bar TYPE flag OPTIONAL
-        !iv_rfcdest           TYPE rfcdest OPTIONAL
-        !iv_client            TYPE mandt OPTIONAL
-      EXPORTING
-        !et_log               TYPE tt_log
-        !ev_error_text        TYPE char255 .
-    CLASS-METHODS compare_json_zip
-      IMPORTING
-        !iv_folder            TYPE clike OPTIONAL
-        !iv_show_progress_bar TYPE flag OPTIONAL
-        !iv_rfcdest           TYPE rfcdest OPTIONAL
-        !iv_client            TYPE mandt OPTIONAL
-      EXPORTING
-        !et_log               TYPE tt_log
-        !ev_error_text        TYPE char255 .
-    CLASS-METHODS export_table
-      IMPORTING
-        !iv_table             TYPE tabname
-        !iv_where             TYPE string OPTIONAL
-        !iv_folder            TYPE clike OPTIONAL
-        !iv_show_progress_bar TYPE flag OPTIONAL
-        !iv_rfcdest           TYPE rfcdest OPTIONAL
-        !iv_client            TYPE mandt OPTIONAL
-      EXPORTING
-        !et_log               TYPE tt_log
-        !ev_error_text        TYPE char255 .
-    CLASS-METHODS export_package
-      IMPORTING
-        !iv_package           TYPE devclass
-        !iv_folder            TYPE clike OPTIONAL
-        !iv_show_progress_bar TYPE flag OPTIONAL
-        !iv_rfcdest           TYPE rfcdest OPTIONAL
-        !iv_client            TYPE mandt OPTIONAL
-      EXPORTING
-        !et_log               TYPE tt_log
-        !ev_error_text        TYPE char255 .
-    CLASS-METHODS compare_table
-      IMPORTING
-        !iv_table             TYPE tabname
-        !iv_where             TYPE string OPTIONAL
-        !iv_show_progress_bar TYPE flag OPTIONAL
-        !iv_rfcdest           TYPE rfcdest OPTIONAL
-        !iv_client            TYPE mandt OPTIONAL
-        !iv_rfcdest2          TYPE rfcdest OPTIONAL
-        !iv_client2           TYPE mandt OPTIONAL
-      EXPORTING
-        !ev_same              TYPE flag
-        !ev_error_text        TYPE char255 .
-    CLASS-METHODS copy_table
-      IMPORTING
-        !iv_table             TYPE tabname
-        !iv_where             TYPE string OPTIONAL
-        !iv_del               TYPE flag OPTIONAL
-        !iv_simulate          TYPE flag OPTIONAL
-        !iv_show_progress_bar TYPE flag OPTIONAL
-        !iv_rfcdest           TYPE rfcdest OPTIONAL
-        !iv_client            TYPE mandt OPTIONAL
-        !iv_rfcdest2          TYPE rfcdest OPTIONAL
-        !iv_client2           TYPE mandt OPTIONAL
-      EXPORTING
-        !et_log               TYPE tt_log
-        !ev_error_text        TYPE char255 .
-    CLASS-METHODS init_server_info
-      RETURNING
-        VALUE(rt_dd) TYPE vrm_values .
-    CLASS-METHODS get_server_info
-      IMPORTING
-        !iv_server  TYPE clike
-      EXPORTING
-        !ev_rfcdest TYPE rfcdest
-        !ev_client  TYPE mandt .
+  class-methods ABAP2JSON
+    importing
+      !IT_DATA type DATA
+      !IV_WHERE type STRING optional
+    exporting
+      !EV_JSON type STRING
+      !EV_JSON_ZIP type XSTRING .
+  class-methods JSON2ABAP
+    importing
+      !IV_JSON_ZIP type XSTRING
+    exporting
+      !ET_DATA type DATA
+      !EV_WHERE type STRING .
+  class-methods IMPORT_JSON_ZIP
+    importing
+      !IV_FOLDER type CLIKE optional
+      !IV_DEL type FLAG optional
+      !IV_SIMULATE type FLAG optional
+      !IV_SHOW_PROGRESS_BAR type FLAG optional
+      !IV_SHOW_CONFIRM type FLAG optional
+      !IV_RFCDEST type RFCDEST optional
+      !IV_CLIENT type MANDT optional
+    exporting
+      !ET_LOG type TT_LOG
+      !EV_ERROR_TEXT type CHAR255 .
+  class-methods COMPARE_JSON_ZIP
+    importing
+      !IV_FOLDER type CLIKE optional
+      !IV_SHOW_PROGRESS_BAR type FLAG optional
+      !IV_RFCDEST type RFCDEST optional
+      !IV_CLIENT type MANDT optional
+    exporting
+      !ET_LOG type TT_LOG
+      !EV_ERROR_TEXT type CHAR255 .
+  class-methods EXPORT_TABLE
+    importing
+      !IV_TABLE type TABNAME
+      !IV_WHERE type STRING optional
+      !IV_FOLDER type CLIKE optional
+      !IV_SHOW_PROGRESS_BAR type FLAG optional
+      !IV_RFCDEST type RFCDEST optional
+      !IV_CLIENT type MANDT optional
+    exporting
+      !ET_LOG type TT_LOG
+      !EV_ERROR_TEXT type CHAR255 .
+  class-methods EXPORT_PACKAGE
+    importing
+      !IV_PACKAGE type DEVCLASS
+      !IV_FOLDER type CLIKE optional
+      !IV_SHOW_PROGRESS_BAR type FLAG optional
+      !IV_RFCDEST type RFCDEST optional
+      !IV_CLIENT type MANDT optional
+    exporting
+      !ET_LOG type TT_LOG
+      !EV_ERROR_TEXT type CHAR255 .
+  class-methods COMPARE_TABLE
+    importing
+      !IV_TABLE type TABNAME
+      !IV_WHERE type STRING optional
+      !IV_SHOW_PROGRESS_BAR type FLAG optional
+      !IV_RFCDEST type RFCDEST optional
+      !IV_CLIENT type MANDT optional
+      !IV_RFCDEST2 type RFCDEST optional
+      !IV_CLIENT2 type MANDT optional
+    exporting
+      !EV_SAME type FLAG
+      !EV_ERROR_TEXT type CHAR255 .
+  class-methods COPY_TABLE
+    importing
+      !IV_TABLE type TABNAME
+      !IV_WHERE type STRING optional
+      !IV_DEL type FLAG optional
+      !IV_SIMULATE type FLAG optional
+      !IV_SHOW_PROGRESS_BAR type FLAG optional
+      !IV_RFCDEST type RFCDEST optional
+      !IV_CLIENT type MANDT optional
+      !IV_RFCDEST2 type RFCDEST optional
+      !IV_CLIENT2 type MANDT optional
+    exporting
+      !ET_LOG type TT_LOG
+      !EV_ERROR_TEXT type CHAR255 .
+  class-methods INIT_SERVER_INFO
+    returning
+      value(RT_DD) type VRM_VALUES .
+  class-methods GET_SERVER_INFO
+    importing
+      !IV_SERVER type CLIKE
+    exporting
+      !EV_RFCDEST type RFCDEST
+      !EV_CLIENT type MANDT .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -805,16 +806,18 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
 
   METHOD import_json_zip.
-    DATA: lv_folder   TYPE string,
-          lt_filename TYPE TABLE OF string,
-          lv_filename TYPE string,
-          lv_xstring  TYPE xstring,
-          lt_table    TYPE TABLE OF tabname,
-          lv_table    TYPE tabname,
-          lv_count    TYPE i,
-          lv_total    TYPE i,
-          lv_index    TYPE i,
-          lo_cx       TYPE REF TO cx_demo_exception.
+    DATA: lv_folder       TYPE string,
+          lt_filename     TYPE TABLE OF string,
+          lv_filename     TYPE string,
+          lv_xstring      TYPE xstring,
+          lt_table        TYPE TABLE OF tabname,
+          lv_table        TYPE tabname,
+          lt_confirmtable TYPE sesf_string_tab,
+          lv_count        TYPE i,
+          lv_total        TYPE i,
+          lv_index        TYPE i,
+          lv_answer       TYPE c,
+          lo_cx           TYPE REF TO cx_demo_exception.
 
     CLEAR: et_log, ev_error_text.
 
@@ -852,13 +855,32 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         ENDIF.
         SORT lt_filename.
 
+        LOOP AT lt_filename INTO lv_filename.
+          APPEND get_table_name( lv_filename ) TO lt_table.
+        ENDLOOP.
+        SORT lt_table.
+        DELETE ADJACENT DUPLICATES FROM lt_table.
+
+        IF iv_show_confirm EQ abap_true.
+          MOVE-CORRESPONDING lt_table TO lt_confirmtable.
+          CALL FUNCTION 'POPUP_TO_CONFIRM_WITH_TABLE'
+            EXPORTING
+              titlebar        = 'Confirm'
+*             start_column    = 25
+*             start_row       = 6
+*             end_column      = 90
+*             end_row         = 20
+              columnname      = 'Table'
+            IMPORTING
+              answer          = lv_answer
+            CHANGING
+              ct_displaytable = lt_confirmtable.
+          IF lv_answer <> 'J'.
+            RETURN.
+          ENDIF.
+        ENDIF.
 
         IF iv_del EQ abap_true.
-          LOOP AT lt_filename INTO lv_filename.
-            APPEND get_table_name( lv_filename ) TO lt_table.
-          ENDLOOP.
-          SORT lt_table.
-          DELETE ADJACENT DUPLICATES FROM lt_table.
           LOOP AT lt_table INTO lv_table.
 *        DELETE FROM (lv_table).
             CALL FUNCTION 'ZA2J_DELETE'
@@ -1695,7 +1717,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
       ELSE.
         " others
-        APPEND lv_base_url TO rt_filename.
+        IF lv_base_url CS '.json'.
+          APPEND lv_base_url TO rt_filename.
+        ENDIF.
       ENDIF.
 
     ELSE.
@@ -1776,7 +1800,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         ENDLOOP.
       ENDIF.
 
-      IF rt_filename IS INITIAL.
+      IF rt_filename IS INITIAL AND iv_folder CS '.json'.
         " if iv_folder is file (not folder), return it.
         IF cl_gui_frontend_services=>file_exist( iv_folder ) EQ abap_true.
           APPEND iv_folder TO rt_filename.
