@@ -746,6 +746,10 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             ELSE.
               lv_filename = iv_table && '.' && lv_datetime && '.part' && lv_part_num && '.json.zip'.
             ENDIF.
+            IF iv_table(1) EQ '/'.
+              " namespace
+              REPLACE ALL OCCURRENCES OF '/' IN lv_filename WITH '#'.
+            ENDIF.
 
             file_download(
               EXPORTING
@@ -1827,5 +1831,11 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
     " remove after .
     FIND '.' IN lv_name MATCH OFFSET lv_offset.
     rv_table = lv_name(lv_offset).
+
+    " namespace
+    IF rv_table(1) EQ '#'.
+      REPLACE ALL OCCURRENCES OF '#' IN rv_table WITH '/'.
+    ENDIF.
+
   ENDMETHOD.
 ENDCLASS.
