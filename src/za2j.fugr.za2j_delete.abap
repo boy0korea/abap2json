@@ -9,12 +9,10 @@ FUNCTION za2j_delete.
 *"  EXPORTING
 *"     VALUE(EV_COUNT) TYPE  I
 *"  EXCEPTIONS
-*"      TABLE_NAME_ERROR
 *"      SQL_ERROR
 *"      UNKOWN_ERROR
 *"----------------------------------------------------------------------
-  DATA: lv_client TYPE mandt,
-        ltr_data  TYPE REF TO data.
+  DATA: lv_client TYPE mandt.
 
   CLEAR: ev_count.
 
@@ -27,17 +25,13 @@ FUNCTION za2j_delete.
 
 
   TRY .
-      CREATE DATA ltr_data TYPE TABLE OF (iv_tname).  " for TABLE_NAME_ERROR
-
       DELETE FROM (iv_tname) USING CLIENT @lv_client WHERE (iv_where).
       ev_count = sy-dbcnt.
       IF iv_commit_work EQ abap_true.
         COMMIT WORK.
       ENDIF.
 
-    CATCH cx_sy_create_error.
-      RAISE table_name_error.
-    CATCH cx_sy_sql_error.
+    CATCH CX_SY_DYNAMIC_OSQL_ERROR.
       RAISE sql_error.
     CATCH cx_root.
       RAISE unkown_error.

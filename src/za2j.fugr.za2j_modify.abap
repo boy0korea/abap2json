@@ -9,7 +9,6 @@ FUNCTION za2j_modify.
 *"  EXPORTING
 *"     VALUE(EV_COUNT) TYPE  I
 *"  EXCEPTIONS
-*"      TABLE_NAME_ERROR
 *"      SQL_ERROR
 *"      UNKOWN_ERROR
 *"----------------------------------------------------------------------
@@ -46,9 +45,7 @@ FUNCTION za2j_modify.
         COMMIT WORK.
       ENDIF.
 
-    CATCH cx_sy_create_error.
-      RAISE table_name_error.
-    CATCH cx_sy_sql_error.
+    CATCH cx_sy_dynamic_osql_error.
       RAISE sql_error.
     CATCH cx_root.
       RAISE unkown_error.

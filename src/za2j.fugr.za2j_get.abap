@@ -4,7 +4,7 @@ FUNCTION za2j_get.
 *"  IMPORTING
 *"     VALUE(IV_CLIENT) TYPE  MANDT
 *"     VALUE(IV_TNAME) TYPE  TABNAME
-*"     VALUE(IV_FROM) TYPE  I DEFAULT 1
+*"     VALUE(IV_FROM) TYPE  I OPTIONAL
 *"     VALUE(IV_UPTO) TYPE  I OPTIONAL
 *"     VALUE(IV_FLAG_COUNT_ONLY) TYPE  FLAG OPTIONAL
 *"     VALUE(IV_WHERE) TYPE  STRING OPTIONAL
@@ -12,17 +12,13 @@ FUNCTION za2j_get.
 *"     VALUE(EV_JSON_ZIP) TYPE  XSTRING
 *"     VALUE(EV_COUNT) TYPE  I
 *"  EXCEPTIONS
-*"      TABLE_NAME_ERROR
 *"      SQL_ERROR
 *"      UNKOWN_ERROR
 *"----------------------------------------------------------------------
-  DATA: lv_client     TYPE mandt,
-        ltr_data      TYPE REF TO data,
-        lv_has_client TYPE flag,
-        lv_offset     TYPE i.
-  FIELD-SYMBOLS: <lt_data> TYPE table,
-                 <ls_data> TYPE data,
-                 <lv_data> TYPE data.
+  DATA: lv_client TYPE mandt,
+        ltr_data  TYPE REF TO data,
+        lv_offset TYPE i.
+  FIELD-SYMBOLS: <lt_data> TYPE table.
 
   CLEAR: ev_json_zip, ev_count.
 
@@ -35,9 +31,6 @@ FUNCTION za2j_get.
 
 
   TRY .
-      CREATE DATA ltr_data TYPE TABLE OF (iv_tname).
-      ASSIGN ltr_data->* TO <lt_data>.
-
       IF iv_flag_count_only IS NOT INITIAL.
         SELECT COUNT(*)
           FROM (iv_tname)
@@ -46,6 +39,9 @@ FUNCTION za2j_get.
           WHERE (iv_where).
         RETURN.
       ENDIF.
+
+      CREATE DATA ltr_data TYPE TABLE OF (iv_tname).
+      ASSIGN ltr_data->* TO <lt_data>.
 
       IF iv_upto IS NOT INITIAL.
         lv_offset = iv_from - 1.
@@ -66,26 +62,14 @@ FUNCTION za2j_get.
 
       CHECK: <lt_data> IS NOT INITIAL.
       ev_count = lines( <lt_data> ).
-      " clear CLIENT(MANDT) field
-      lv_has_client = cl_abap_typedescr=>describe_by_name( iv_tname )->has_property( cl_abap_typedescr=>typepropkind_hasclient ).
-      IF lv_has_client EQ abap_true.
-        LOOP AT <lt_data> ASSIGNING <ls_data>.
-          ASSIGN COMPONENT 1 OF STRUCTURE <ls_data> TO <lv_data>.
-          CLEAR: <lv_data>.
-        ENDLOOP.
-      ENDIF.
-
       zcl_abap2json=>abap2json(
         EXPORTING
           it_data     = <lt_data>
-          iv_where    = iv_where
         IMPORTING
           ev_json_zip = ev_json_zip
       ).
 
-    CATCH cx_sy_create_error.
-      RAISE table_name_error.
-    CATCH cx_sy_sql_error.
+    CATCH cx_sy_dynamic_osql_error.
       RAISE sql_error.
     CATCH cx_root.
       RAISE unkown_error.
