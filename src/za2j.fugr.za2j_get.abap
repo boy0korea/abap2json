@@ -15,9 +15,10 @@ FUNCTION za2j_get.
 *"      SQL_ERROR
 *"      UNKOWN_ERROR
 *"----------------------------------------------------------------------
-  DATA: lv_client TYPE mandt,
-        ltr_data  TYPE REF TO data,
-        lv_offset TYPE i.
+  DATA: lv_client    TYPE mandt,
+        ltr_data     TYPE REF TO data,
+        lv_offset    TYPE i,
+        lo_exception TYPE REF TO cx_root.
   FIELD-SYMBOLS: <lt_data> TYPE table.
 
   CLEAR: ev_json_zip, ev_count.
@@ -69,9 +70,9 @@ FUNCTION za2j_get.
           ev_json_zip = ev_json_zip
       ).
 
-    CATCH cx_sy_dynamic_osql_error.
+    CATCH cx_sy_dynamic_osql_error INTO lo_exception.
       RAISE sql_error.
-    CATCH cx_root.
+    CATCH cx_root INTO lo_exception.
       RAISE unkown_error.
   ENDTRY.
 

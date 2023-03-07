@@ -12,9 +12,10 @@ FUNCTION za2j_modify.
 *"      SQL_ERROR
 *"      UNKOWN_ERROR
 *"----------------------------------------------------------------------
-  DATA: lv_client TYPE mandt,
-        ltr_data  TYPE REF TO data,
-        lv_json   TYPE string.
+  DATA: lv_client    TYPE mandt,
+        ltr_data     TYPE REF TO data,
+        lv_json      TYPE string,
+        lo_exception TYPE REF TO cx_root.
   FIELD-SYMBOLS: <lt_data> TYPE table.
 
   CLEAR: ev_count.
@@ -45,9 +46,9 @@ FUNCTION za2j_modify.
         COMMIT WORK.
       ENDIF.
 
-    CATCH cx_sy_dynamic_osql_error.
+    CATCH cx_sy_dynamic_osql_error INTO lo_exception.
       RAISE sql_error.
-    CATCH cx_root.
+    CATCH cx_root INTO lo_exception.
       RAISE unkown_error.
   ENDTRY.
 

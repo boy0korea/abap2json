@@ -12,7 +12,8 @@ FUNCTION za2j_delete.
 *"      SQL_ERROR
 *"      UNKOWN_ERROR
 *"----------------------------------------------------------------------
-  DATA: lv_client TYPE mandt.
+  DATA: lv_client    TYPE mandt,
+        lo_exception TYPE REF TO cx_root.
 
   CLEAR: ev_count.
 
@@ -31,9 +32,9 @@ FUNCTION za2j_delete.
         COMMIT WORK.
       ENDIF.
 
-    CATCH CX_SY_DYNAMIC_OSQL_ERROR.
+    CATCH cx_sy_dynamic_osql_error INTO lo_exception.
       RAISE sql_error.
-    CATCH cx_root.
+    CATCH cx_root INTO lo_exception.
       RAISE unkown_error.
   ENDTRY.
 
