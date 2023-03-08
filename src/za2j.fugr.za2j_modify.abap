@@ -41,7 +41,11 @@ FUNCTION za2j_modify.
       ).
       ev_count = lines( <lt_data> ).
       CHECK: <lt_data> IS NOT INITIAL.
-      MODIFY (iv_tname) USING CLIENT @lv_client FROM TABLE @<lt_data> .
+      TRY .
+          MODIFY (iv_tname) USING CLIENT @lv_client FROM TABLE @<lt_data>.
+        CATCH cx_sy_dynamic_osql_semantics.
+          INSERT (iv_tname) USING CLIENT @lv_client FROM TABLE @<lt_data> ACCEPTING DUPLICATE KEYS.
+      ENDTRY.
       IF iv_commit_work EQ abap_true.
         COMMIT WORK.
       ENDIF.
