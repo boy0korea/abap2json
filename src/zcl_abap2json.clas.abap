@@ -360,6 +360,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             EXPORTING
               iv_client             = iv_client2
               iv_tname              = iv_table
+              iv_where              = iv_where
             IMPORTING
               ev_count              = lv_count
             EXCEPTIONS
