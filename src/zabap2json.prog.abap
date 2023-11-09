@@ -120,6 +120,7 @@ START-OF-SELECTION.
           iv_del               = p_del
           iv_simulate          = p_simul
           iv_show_progress_bar = abap_true
+          iv_show_confirm      = abap_true
           iv_rfcdest           = lv_rfcdest
           iv_client            = lv_client
         IMPORTING
