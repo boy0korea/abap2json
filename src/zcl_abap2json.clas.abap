@@ -153,8 +153,8 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           lv_index      TYPE i,
           lv_has_client TYPE flag,
           lo_cx         TYPE REF TO cx_demo_exception.
-    FIELD-SYMBOLS: <lt_data>  TYPE table,
-                   <lt_data2> TYPE table,
+    FIELD-SYMBOLS: <lt_data>  TYPE STANDARD TABLE,
+                   <lt_data2> TYPE STANDARD TABLE,
                    <ls_data>  TYPE data,
                    <lv_data>  TYPE data.
 
@@ -220,9 +220,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
         lv_has_client = cl_abap_typedescr=>describe_by_name( iv_table )->has_property( cl_abap_typedescr=>typepropkind_hasclient ).
 
-        CREATE DATA ltr_data TYPE TABLE OF (iv_table).
+        CREATE DATA ltr_data TYPE STANDARD TABLE OF (iv_table).
         ASSIGN ltr_data->* TO <lt_data>.
-        CREATE DATA ltr_data TYPE TABLE OF (iv_table).
+        CREATE DATA ltr_data TYPE STANDARD TABLE OF (iv_table).
         ASSIGN ltr_data->* TO <lt_data2>.
 
         lv_from = 1.
@@ -515,6 +515,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           WHERE devclass = iv_package
             AND as4local = 'A'
             AND tabclass = 'TRANSP'.
+        IF sy-subrc <> 0.
+          EXIT.
+        ENDIF.
         CHECK: lt_table IS NOT INITIAL.
 
 
@@ -1088,6 +1091,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
       SELECT *
         INTO TABLE lt_t000
         FROM t000.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
       SORT lt_t000 BY mandt.
       LOOP AT lt_t000 INTO ls_t000 WHERE mandt > 0.
         IF ls_t000-mandt EQ sy-mandt.
@@ -1106,6 +1112,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           system_is_virtual  = 1
           read_config_failed = 2
           OTHERS             = 3.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
 
       LOOP AT gt_tms INTO ls_tms WHERE system-sysnam <> sy-sysid.
         LOOP AT ls_tms-t000 INTO ls_t000 WHERE mandt > 0.

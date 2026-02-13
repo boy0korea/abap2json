@@ -27,7 +27,11 @@ FUNCTION za2j_delete.
 
   TRY .
       DELETE FROM (iv_tname) USING CLIENT @lv_client WHERE (iv_where).
-      ev_count = sy-dbcnt.
+      IF sy-subrc EQ 0.
+        ev_count = sy-dbcnt.
+      ELSE.
+        ev_count = 0.
+      ENDIF.
       IF iv_commit_work EQ abap_true.
         COMMIT WORK.
       ENDIF.

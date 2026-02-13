@@ -42,8 +42,14 @@ FUNCTION za2j_modify.
       CHECK: <lt_data> IS NOT INITIAL.
       TRY .
           MODIFY (iv_tname) USING CLIENT @lv_client FROM TABLE @<lt_data>.
+          IF sy-subrc <> 0.
+            ev_count = 0.
+          ENDIF.
         CATCH cx_sy_dynamic_osql_semantics.
           INSERT (iv_tname) USING CLIENT @lv_client FROM TABLE @<lt_data> ACCEPTING DUPLICATE KEYS.
+          IF sy-subrc <> 0.
+            ev_count = 0.
+          ENDIF.
       ENDTRY.
       IF iv_commit_work EQ abap_true.
         COMMIT WORK.

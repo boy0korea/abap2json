@@ -38,6 +38,9 @@ FUNCTION za2j_get.
           USING CLIENT @lv_client
           INTO @ev_count
           WHERE (iv_where).
+        IF sy-subrc <> 0.
+          ev_count = 0.
+        ENDIF.
         RETURN.
       ENDIF.
 
@@ -59,6 +62,9 @@ FUNCTION za2j_get.
           USING CLIENT @lv_client
           WHERE (iv_where)
           INTO TABLE @<lt_data>.
+      ENDIF.
+      IF sy-subrc <> 0.
+        ev_count = 0.
       ENDIF.
 
       CHECK: <lt_data> IS NOT INITIAL.
