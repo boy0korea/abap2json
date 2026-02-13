@@ -9,7 +9,8 @@ PARAMETERS: p_impo   TYPE flag RADIOBUTTON GROUP rd DEFAULT 'X' USER-COMMAND rd,
             p_expo_t TYPE flag RADIOBUTTON GROUP rd,
             p_expo_p TYPE flag RADIOBUTTON GROUP rd,
             p_comp   TYPE flag RADIOBUTTON GROUP rd,
-            p_copy   TYPE flag RADIOBUTTON GROUP rd.
+            p_copy   TYPE flag RADIOBUTTON GROUP rd,
+            p_trace  TYPE flag RADIOBUTTON GROUP rd.
 
 SELECTION-SCREEN ULINE.
 PARAMETERS: p_folder TYPE string LOWER CASE MODIF ID 1,
@@ -81,7 +82,21 @@ AT SELECTION-SCREEN OUTPUT.
         ENDCASE.
         MODIFY SCREEN.
       ENDLOOP.
+    WHEN p_trace.
+      LOOP AT SCREEN.
+        CHECK: screen-group1 IS NOT INITIAL.
+        screen-active = 0.
+        MODIFY SCREEN.
+      ENDLOOP.
   ENDCASE.
+  IF zcl_abap2json=>gc_trace_log_on EQ abap_false.
+    LOOP AT SCREEN.
+      IF screen-name = 'P_TRACE'.
+        screen-active = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
 
 
 **********************************************************************
@@ -229,6 +244,9 @@ START-OF-SELECTION.
           et_log               = lt_log
           ev_error_text        = lv_error_text
       ).
+    WHEN p_trace.
+      SET PARAMETER ID 'DTB' FIELD 'ZTA2J_TRACE_LOG'.
+      CALL TRANSACTION 'SE16N' AND SKIP FIRST SCREEN.
   ENDCASE.
 
   IF lv_error_text IS NOT INITIAL.

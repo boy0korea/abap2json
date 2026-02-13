@@ -13,6 +13,7 @@ public section.
   types:
     tt_log TYPE TABLE OF ts_log .
 
+  constants GC_TRACE_LOG_ON type FLAG value ABAP_TRUE ##NO_TEXT.
   constants GC_SPLIT_SIZE type I value 10000 ##NO_TEXT.
   constants GC_ENCODING type ABAP_ENCOD value 'UTF-8' ##NO_TEXT.
   class-data GT_TMS type STMS_WBO_CLIENTS read-only .
@@ -376,6 +377,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             ENDIF.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
+          IF iv_simulate EQ abap_false.
+            CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+              DESTINATION iv_rfcdest2.
+          ELSE.
+            CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'
+              DESTINATION iv_rfcdest2.
+          ENDIF.
           APPEND VALUE #( table = iv_table file = 'deleted' count = lv_count ) TO et_log.
         ENDIF.
 
@@ -438,39 +446,42 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
 
-          CALL FUNCTION 'ZA2J_MODIFY'
-            DESTINATION iv_rfcdest2
-            EXPORTING
-              iv_client             = iv_client2
-              iv_tname              = iv_table
-              iv_json_zip           = lv_xstring
-            IMPORTING
-              ev_count              = lv_count
-            EXCEPTIONS
-              system_failure        = 101 MESSAGE ev_error_text
-              communication_failure = 102 MESSAGE ev_error_text
-              sql_error             = 1
-              unkown_error          = 2
-              OTHERS                = 3.
-          IF sy-subrc <> 0.
-            IF ev_error_text IS INITIAL.
-              ev_error_text = get_rfc_error_text( ).
+          IF lv_count IS INITIAL.
+            EXIT.
+          ELSE.
+            lv_from = lv_from + gc_split_size.
+
+            CALL FUNCTION 'ZA2J_MODIFY'
+              DESTINATION iv_rfcdest2
+              EXPORTING
+                iv_client             = iv_client2
+                iv_tname              = iv_table
+                iv_json_zip           = lv_xstring
+              IMPORTING
+                ev_count              = lv_count
+              EXCEPTIONS
+                system_failure        = 101 MESSAGE ev_error_text
+                communication_failure = 102 MESSAGE ev_error_text
+                sql_error             = 1
+                unkown_error          = 2
+                OTHERS                = 3.
+            IF sy-subrc <> 0.
+              IF ev_error_text IS INITIAL.
+                ev_error_text = get_rfc_error_text( ).
+              ENDIF.
+              RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
             ENDIF.
-            RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
+            IF iv_simulate EQ abap_false.
+              CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+                DESTINATION iv_rfcdest2.
+            ELSE.
+              CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'
+                DESTINATION iv_rfcdest2.
+            ENDIF.
+
+            APPEND VALUE #( table = iv_table file = 'copy' count = lv_count ) TO et_log.
           ENDIF.
-
-          APPEND VALUE #( table = iv_table file = 'copy' count = lv_count ) TO et_log.
         ENDWHILE.
-
-
-
-        IF iv_simulate EQ abap_false.
-          CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
-            DESTINATION iv_rfcdest2.
-        ELSE.
-          CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'
-            DESTINATION iv_rfcdest2.
-        ENDIF.
 
       CATCH cx_demo_exception INTO lo_cx.
         ev_error_text = lo_cx->exception_text.
@@ -935,6 +946,13 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
               ENDIF.
               RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
             ENDIF.
+            IF iv_simulate EQ abap_false.
+              CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+                DESTINATION iv_rfcdest.
+            ELSE.
+              CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'
+                DESTINATION iv_rfcdest.
+            ENDIF.
             APPEND VALUE #( table = lv_table file = 'deleted' count = lv_count ) TO et_log.
           ENDLOOP.
         ENDIF.
@@ -1039,18 +1057,16 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             ENDIF.
             RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = ev_error_text.
           ENDIF.
+          IF iv_simulate EQ abap_false.
+            CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+              DESTINATION iv_rfcdest.
+          ELSE.
+            CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'
+              DESTINATION iv_rfcdest.
+          ENDIF.
 
           APPEND VALUE #( table = lv_table file = ls_file_info-filename count = lv_count ) TO et_log.
         ENDLOOP.
-
-
-        IF iv_simulate EQ abap_false.
-          CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
-            DESTINATION iv_rfcdest.
-        ELSE.
-          CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'
-            DESTINATION iv_rfcdest.
-        ENDIF.
 
       CATCH cx_demo_exception INTO lo_cx.
         ev_error_text = lo_cx->exception_text.

@@ -76,4 +76,17 @@ FUNCTION za2j_get.
       RAISE unkown_error.
   ENDTRY.
 
+  IF zcl_abap2json=>gc_trace_log_on EQ abap_true AND iv_flag_count_only = abap_false.
+    DATA: ls_zta2j_trace_log TYPE zta2j_trace_log.
+    ls_zta2j_trace_log-datum = sy-datum.
+    ls_zta2j_trace_log-uzeit = sy-uzeit.
+    ls_zta2j_trace_log-uname = sy-uname.
+    ls_zta2j_trace_log-tabname = iv_tname.
+    ls_zta2j_trace_log-op = 'ZA2J_GET'.
+    ls_zta2j_trace_log-dbcnt = ev_count.
+    ls_zta2j_trace_log-sql_where = iv_where.
+    MODIFY zta2j_trace_log USING CLIENT @lv_client FROM @ls_zta2j_trace_log.
+    COMMIT WORK.
+  ENDIF.
+
 ENDFUNCTION.
