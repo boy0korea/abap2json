@@ -5,7 +5,7 @@ FUNCTION za2j_delete.
 *"     VALUE(IV_CLIENT) TYPE  MANDT
 *"     VALUE(IV_TNAME) TYPE  TABNAME
 *"     VALUE(IV_WHERE) TYPE  STRING OPTIONAL
-*"     VALUE(IV_COMMIT_WORK) TYPE  FLAG OPTIONAL
+*"     VALUE(IV_SIMULATE) TYPE  FLAG OPTIONAL
 *"  EXPORTING
 *"     VALUE(EV_COUNT) TYPE  I
 *"  EXCEPTIONS
@@ -32,13 +32,17 @@ FUNCTION za2j_delete.
       ELSE.
         ev_count = 0.
       ENDIF.
-      IF iv_commit_work EQ abap_true.
+      IF iv_simulate EQ abap_false.
         COMMIT WORK.
+      ELSE.
+        ROLLBACK WORK.
       ENDIF.
 
     CATCH cx_sy_dynamic_osql_error INTO lo_exception.
+      ROLLBACK WORK.
       RAISE sql_error.
     CATCH cx_root INTO lo_exception.
+      ROLLBACK WORK.
       RAISE unkown_error.
   ENDTRY.
 
@@ -49,6 +53,7 @@ FUNCTION za2j_delete.
     ls_zta2j_trace_log-uname = sy-uname.
     ls_zta2j_trace_log-tabname = iv_tname.
     ls_zta2j_trace_log-op = 'ZA2J_DELETE'.
+    ls_zta2j_trace_log-simulate = iv_simulate.
     ls_zta2j_trace_log-dbcnt = ev_count.
     ls_zta2j_trace_log-sql_where = iv_where.
     MODIFY zta2j_trace_log USING CLIENT @lv_client FROM @ls_zta2j_trace_log.

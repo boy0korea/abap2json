@@ -27,7 +27,7 @@
        <TYP>STRING</TYP>
       </RSIMP>
       <RSIMP>
-       <PARAMETER>IV_COMMIT_WORK</PARAMETER>
+       <PARAMETER>IV_SIMULATE</PARAMETER>
        <OPTIONAL>X</OPTIONAL>
        <TYP>FLAG</TYP>
       </RSIMP>
@@ -62,7 +62,7 @@
        <KIND>P</KIND>
       </RSFDO>
       <RSFDO>
-       <PARAMETER>IV_COMMIT_WORK</PARAMETER>
+       <PARAMETER>IV_SIMULATE</PARAMETER>
        <KIND>P</KIND>
       </RSFDO>
       <RSFDO>
@@ -194,7 +194,7 @@
        <TYP>XSTRING</TYP>
       </RSIMP>
       <RSIMP>
-       <PARAMETER>IV_COMMIT_WORK</PARAMETER>
+       <PARAMETER>IV_SIMULATE</PARAMETER>
        <OPTIONAL>X</OPTIONAL>
        <TYP>FLAG</TYP>
       </RSIMP>
@@ -229,7 +229,7 @@
        <KIND>P</KIND>
       </RSFDO>
       <RSFDO>
-       <PARAMETER>IV_COMMIT_WORK</PARAMETER>
+       <PARAMETER>IV_SIMULATE</PARAMETER>
        <KIND>P</KIND>
       </RSFDO>
       <RSFDO>
