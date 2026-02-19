@@ -92,7 +92,9 @@ FUNCTION za2j_get.
     ls_zta2j_trace_log-dbcnt = ev_count.
     ls_zta2j_trace_log-sql_where = iv_where.
     MODIFY zta2j_trace_log USING CLIENT @lv_client FROM @ls_zta2j_trace_log.
-    COMMIT WORK.
+    IF sy-subrc EQ 0.
+      COMMIT WORK.
+    ENDIF.
   ENDIF.
 
 ENDFUNCTION.

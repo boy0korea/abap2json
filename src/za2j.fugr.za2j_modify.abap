@@ -75,6 +75,9 @@ FUNCTION za2j_modify.
     ls_zta2j_trace_log-simulate = iv_simulate.
     ls_zta2j_trace_log-dbcnt = ev_count.
     MODIFY zta2j_trace_log USING CLIENT @lv_client FROM @ls_zta2j_trace_log.
+    IF sy-subrc EQ 0.
+      COMMIT WORK.
+    ENDIF.
   ENDIF.
 
 ENDFUNCTION.
