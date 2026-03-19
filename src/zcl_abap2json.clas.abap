@@ -1009,6 +1009,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
           SPLIT ls_file_info-filename AT '.' INTO TABLE lt_string.
           READ TABLE lt_string INTO lv_table INDEX 1.
+          REPLACE ALL OCCURRENCES OF '##' IN lv_table WITH '/'.
 
 *      CREATE DATA lr_data TYPE TABLE OF (lv_table).
 *      ASSIGN lr_data->* TO <lt_data>.
