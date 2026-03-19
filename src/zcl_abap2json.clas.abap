@@ -709,6 +709,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
             ELSE.
               lv_file_name = iv_table && '.' && sy-datum && '.part' && lv_part_num && '.json.zip'.
             ENDIF.
+            REPLACE ALL OCCURRENCES OF '/' IN lv_file_name WITH '##'.
             cl_gui_frontend_services=>gui_download(
               EXPORTING
                 bin_filesize              = lv_filelength         " File length for binary files
@@ -888,6 +889,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         LOOP AT lt_file_info INTO ls_file_info.
           SPLIT ls_file_info-filename AT '.' INTO TABLE lt_string.
           READ TABLE lt_string INTO lv_table INDEX 1.
+          REPLACE ALL OCCURRENCES OF '##' IN lv_table WITH '/'.
           APPEND lv_table TO lt_table.
         ENDLOOP.
         SORT lt_table.
