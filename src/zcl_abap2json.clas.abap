@@ -148,6 +148,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           lv_total      TYPE i,
           lv_total2     TYPE i,
           lv_from       TYPE i,
+          lv_to         TYPE i,
           lv_count      TYPE i,
           lv_count2     TYPE i,
           lv_index      TYPE i,
@@ -229,11 +230,16 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         WHILE lv_from <= lv_total.
           CLEAR: lv_xstring, lv_count.
 
+          lv_to = lv_from + gc_split_size - 1.
+          IF lv_to > lv_total.
+            lv_to = lv_total.
+          ENDIF.
+
           IF iv_show_progress_bar EQ abap_true.
             CALL FUNCTION 'PROGRESS_INDICATOR'
               EXPORTING
-                i_text      = |{ CONV f( 100 * lv_from / lv_total ) DECIMALS = 2 }% of { lv_total NUMBER = USER }|
-                i_processed = lv_from
+                i_text      = |{ CONV f( 100 * lv_to / lv_total ) DECIMALS = 2 }% of { lv_total NUMBER = USER }|
+                i_processed = lv_to
                 i_total     = lv_total.
           ENDIF.
 
@@ -339,6 +345,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           lv_total      TYPE i,
           lv_total2     TYPE i,
           lv_from       TYPE i,
+          lv_to         TYPE i,
           lv_count      TYPE i,
           lv_count2     TYPE i,
           lv_index      TYPE i,
@@ -408,11 +415,16 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         WHILE lv_from <= lv_total.
           CLEAR: lv_xstring, lv_count.
 
+          lv_to = lv_from + gc_split_size - 1.
+          IF lv_to > lv_total.
+            lv_to = lv_total.
+          ENDIF.
+
           IF iv_show_progress_bar EQ abap_true.
             CALL FUNCTION 'PROGRESS_INDICATOR'
               EXPORTING
-                i_text      = |{ CONV f( 100 * lv_from / lv_total ) DECIMALS = 2 }% of { lv_total NUMBER = USER }|
-                i_processed = lv_from
+                i_text      = |{ CONV f( 100 * lv_to / lv_total ) DECIMALS = 2 }% of { lv_total NUMBER = USER }|
+                i_processed = lv_to
                 i_total     = lv_total.
           ENDIF.
 
@@ -574,6 +586,7 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
           lv_xstring         TYPE xstring,
           lv_total           TYPE i,
           lv_from            TYPE i,
+          lv_to              TYPE i,
           lv_part_num        TYPE i,
           lv_count           TYPE i,
           lv_index           TYPE i,
@@ -657,11 +670,16 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
         WHILE lv_from <= lv_total.
           CLEAR: lv_xstring, lv_count, lt_temptable.
 
+          lv_to = lv_from + gc_split_size - 1.
+          IF lv_to > lv_total.
+            lv_to = lv_total.
+          ENDIF.
+
           IF iv_show_progress_bar EQ abap_true.
             CALL FUNCTION 'PROGRESS_INDICATOR'
               EXPORTING
-                i_text      = |{ CONV f( 100 * lv_from / lv_total ) DECIMALS = 2 }% of { lv_total NUMBER = USER }|
-                i_processed = lv_from
+                i_text      = |{ CONV f( 100 * lv_to / lv_total ) DECIMALS = 2 }% of { lv_total NUMBER = USER }|
+                i_processed = lv_to
                 i_total     = lv_total.
           ENDIF.
 
