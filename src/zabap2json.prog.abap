@@ -16,11 +16,22 @@ SELECTION-SCREEN ULINE.
 PARAMETERS: p_folder TYPE string LOWER CASE MODIF ID 1,
             p_packag TYPE tadir-devclass MODIF ID 2,
             p_table  TYPE info_tabl-tabname MATCHCODE OBJECT dd_dbtb_16 MODIF ID 3,
-            p_where  TYPE string LOWER CASE MODIF ID 4,
-            p_server TYPE char30 AS LISTBOX VISIBLE LENGTH 50 MODIF ID 6,
-            p_serve2 TYPE char30 AS LISTBOX VISIBLE LENGTH 50 MODIF ID 7,
-            p_del    TYPE flag MODIF ID 8,
-            p_simul  TYPE flag MODIF ID 9.
+            p_where  TYPE string LOWER CASE MODIF ID 4.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 1(31) gv_serv1 FOR FIELD p_server MODIF ID 6.
+  PARAMETERS: p_server TYPE char30 AS LISTBOX VISIBLE LENGTH 50 MODIF ID 6 USER-COMMAND sv1,
+              p_rfcdes TYPE rfcdest MATCHCODE OBJECT f4_rfcdes3 MODIF ID 6.
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 1(31) gv_serv2 FOR FIELD p_serve2 MODIF ID 7.
+  PARAMETERS: p_serve2 TYPE char30 AS LISTBOX VISIBLE LENGTH 50 MODIF ID 7 USER-COMMAND sv2,
+              p_rfcde2 TYPE rfcdest MATCHCODE OBJECT f4_rfcdes3 MODIF ID 7.
+SELECTION-SCREEN END OF LINE.
+
+PARAMETERS: p_del   TYPE flag MODIF ID 8,
+            p_simul TYPE flag MODIF ID 9.
 
 
 **********************************************************************
@@ -97,6 +108,16 @@ AT SELECTION-SCREEN OUTPUT.
       ENDIF.
     ENDLOOP.
   ENDIF.
+  LOOP AT SCREEN.
+    IF screen-name = 'P_RFCDES' AND p_server <> '_OTHERS_'.
+      screen-input = 0.
+      MODIFY SCREEN.
+    ENDIF.
+    IF screen-name = 'P_RFCDE2' AND p_serve2 <> '_OTHERS_'.
+      screen-input = 0.
+      MODIFY SCREEN.
+    ENDIF.
+  ENDLOOP.
 
 
 **********************************************************************
@@ -122,13 +143,7 @@ START-OF-SELECTION.
 
   CASE abap_true.
     WHEN p_impo.
-      zcl_abap2json=>get_server_info(
-        EXPORTING
-          iv_server  = p_server
-        IMPORTING
-          ev_rfcdest = lv_rfcdest
-          ev_client  = lv_client
-      ).
+      PERFORM get_server_info USING p_server p_rfcdes CHANGING lv_rfcdest lv_client.
       zcl_abap2json=>import_json_zip(
         EXPORTING
           iv_folder            = p_folder
@@ -144,57 +159,37 @@ START-OF-SELECTION.
       ).
     WHEN p_expo_t.
       CHECK: p_table IS NOT INITIAL.
-      zcl_abap2json=>get_server_info(
-        EXPORTING
-          iv_server  = p_server
-        IMPORTING
-          ev_rfcdest = lv_rfcdest
-          ev_client  = lv_client
-      ).
+      PERFORM get_server_info USING p_server p_rfcdes CHANGING lv_rfcdest lv_client.
       zcl_abap2json=>export_table(
         EXPORTING
           iv_table             = p_table
           iv_folder            = p_folder
           iv_show_progress_bar = abap_true
           iv_where             = p_where
+          iv_rfcdest           = lv_rfcdest
+          iv_client            = lv_client
         IMPORTING
           et_log               = lt_log
           ev_error_text        = lv_error_text
       ).
     WHEN p_expo_p.
       CHECK: p_packag IS NOT INITIAL.
-      zcl_abap2json=>get_server_info(
-        EXPORTING
-          iv_server  = p_server
-        IMPORTING
-          ev_rfcdest = lv_rfcdest
-          ev_client  = lv_client
-      ).
+      PERFORM get_server_info USING p_server p_rfcdes CHANGING lv_rfcdest lv_client.
       zcl_abap2json=>export_package(
         EXPORTING
           iv_package           = p_packag
           iv_folder            = p_folder
           iv_show_progress_bar = abap_true
+          iv_rfcdest           = lv_rfcdest
+          iv_client            = lv_client
         IMPORTING
           et_log               = lt_log
           ev_error_text        = lv_error_text
       ).
     WHEN p_comp.
       CHECK: p_table IS NOT INITIAL.
-      zcl_abap2json=>get_server_info(
-        EXPORTING
-          iv_server  = p_server
-        IMPORTING
-          ev_rfcdest = lv_rfcdest
-          ev_client  = lv_client
-      ).
-      zcl_abap2json=>get_server_info(
-        EXPORTING
-          iv_server  = p_serve2
-        IMPORTING
-          ev_rfcdest = lv_rfcdest2
-          ev_client  = lv_client2
-      ).
+      PERFORM get_server_info USING p_server p_rfcdes CHANGING lv_rfcdest  lv_client.
+      PERFORM get_server_info USING p_serve2 p_rfcde2 CHANGING lv_rfcdest2 lv_client2.
       zcl_abap2json=>compare_table(
         EXPORTING
           iv_table             = p_table
@@ -215,20 +210,8 @@ START-OF-SELECTION.
       ENDIF.
     WHEN p_copy.
       CHECK: p_table IS NOT INITIAL.
-      zcl_abap2json=>get_server_info(
-        EXPORTING
-          iv_server  = p_server
-        IMPORTING
-          ev_rfcdest = lv_rfcdest
-          ev_client  = lv_client
-      ).
-      zcl_abap2json=>get_server_info(
-        EXPORTING
-          iv_server  = p_serve2
-        IMPORTING
-          ev_rfcdest = lv_rfcdest2
-          ev_client  = lv_client2
-      ).
+      PERFORM get_server_info USING p_server p_rfcdes CHANGING lv_rfcdest  lv_client.
+      PERFORM get_server_info USING p_serve2 p_rfcde2 CHANGING lv_rfcdest2 lv_client2.
       zcl_abap2json=>copy_table(
         EXPORTING
           iv_table             = p_table
@@ -266,7 +249,11 @@ END-OF-SELECTION.
 FORM do_init.
   DATA: lt_dd   TYPE vrm_values.
 
+  gv_serv1 = 'Server'.
+  gv_serv2 = 'Server'.
+
   lt_dd = zcl_abap2json=>init_server_info( ).
+  APPEND VALUE #( key = '_OTHERS_' text = 'Others' ) TO lt_dd.
 
   CALL FUNCTION 'VRM_SET_VALUES'
     EXPORTING
@@ -278,6 +265,23 @@ FORM do_init.
       id     = 'P_SERVE2'
       values = lt_dd.
 
+ENDFORM.
+FORM get_server_info USING    iv_server  TYPE clike
+                              iv_rfcdes  TYPE rfcdest
+                     CHANGING ev_rfcdest TYPE rfcdest
+                              ev_client  TYPE mandt.
+  CLEAR: ev_rfcdest, ev_client.
+  IF iv_server = '_OTHERS_'.
+    ev_rfcdest = iv_rfcdes.
+  ELSE.
+    zcl_abap2json=>get_server_info(
+      EXPORTING
+        iv_server  = iv_server
+      IMPORTING
+        ev_rfcdest = ev_rfcdest
+        ev_client  = ev_client
+    ).
+  ENDIF.
 ENDFORM.
 FORM select_folder USING cv_folder.
   DATA: lt_df TYPE TABLE OF dynpread,

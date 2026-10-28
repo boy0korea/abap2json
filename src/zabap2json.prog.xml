@@ -19,13 +19,13 @@
      <ID>S</ID>
      <KEY>P_COMP</KEY>
      <ENTRY>Comapre</ENTRY>
-     <LENGTH>17</LENGTH>
+     <LENGTH>15</LENGTH>
     </item>
     <item>
      <ID>S</ID>
      <KEY>P_COPY</KEY>
      <ENTRY>Copy</ENTRY>
-     <LENGTH>17</LENGTH>
+     <LENGTH>12</LENGTH>
     </item>
     <item>
      <ID>S</ID>
@@ -61,8 +61,20 @@
      <ID>S</ID>
      <KEY>P_PACKAG</KEY>
      <ENTRY>.</ENTRY>
-     <LENGTH>15</LENGTH>
+     <LENGTH>9</LENGTH>
      <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_RFCDE2</KEY>
+     <ENTRY>RFC Destination</ENTRY>
+     <LENGTH>23</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_RFCDES</KEY>
+     <ENTRY>RFC Destination</ENTRY>
+     <LENGTH>23</LENGTH>
     </item>
     <item>
      <ID>S</ID>
@@ -86,7 +98,7 @@
      <ID>S</ID>
      <KEY>P_TABLE</KEY>
      <ENTRY>.</ENTRY>
-     <LENGTH>18</LENGTH>
+     <LENGTH>9</LENGTH>
      <SPLIT>D</SPLIT>
     </item>
     <item>

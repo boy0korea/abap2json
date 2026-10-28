@@ -16,6 +16,13 @@
     <TCODE>ZABAP2JSON</TCODE>
     <TTEXT>abap2json</TTEXT>
    </TSTCT>
+   <HEAD>
+    <NAME>ZABAP2JSON</NAME>
+    <TYPE>TR</TYPE>
+    <DISPLAY_NAME>ZABAP2JSON</DISPLAY_NAME>
+    <STEXT>Report Transaction</STEXT>
+    <CTYPE>R</CTYPE>
+   </HEAD>
   </asx:values>
  </asx:abap>
 </abapGit>

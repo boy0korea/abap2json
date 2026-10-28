@@ -163,12 +163,12 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
     TRY.
 
-        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
-        IF iv_rfcdest2 IS NOT INITIAL AND iv_client2 IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
+*        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
+*          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
+*        ENDIF.
+*        IF iv_rfcdest2 IS NOT INITIAL AND iv_client2 IS INITIAL.
+*          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
+*        ENDIF.
 
         CALL FUNCTION 'ZA2J_GET'
           DESTINATION iv_rfcdest
@@ -355,12 +355,12 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
     TRY.
 
-        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
-        IF iv_rfcdest2 IS NOT INITIAL AND iv_client2 IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
+*        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
+*          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
+*        ENDIF.
+*        IF iv_rfcdest2 IS NOT INITIAL AND iv_client2 IS INITIAL.
+*          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
+*        ENDIF.
 
         IF iv_del EQ abap_true.
 *        DELETE FROM (lv_table).
@@ -502,9 +502,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
     TRY.
 
-        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
+*        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
+*          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
+*        ENDIF.
 
         SELECT tabname
           INTO TABLE lt_table
@@ -596,9 +596,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
     TRY.
 
-        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
+*        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
+*          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
+*        ENDIF.
 
         CALL FUNCTION 'ZA2J_GET'
           DESTINATION iv_rfcdest
@@ -835,9 +835,9 @@ CLASS ZCL_ABAP2JSON IMPLEMENTATION.
 
     TRY.
 
-        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
-          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
-        ENDIF.
+*        IF iv_rfcdest IS NOT INITIAL AND iv_client IS INITIAL.
+*          RAISE EXCEPTION TYPE cx_demo_exception EXPORTING exception_text = TEXT-e03.
+*        ENDIF.
 
 
         IF iv_folder IS NOT INITIAL.
